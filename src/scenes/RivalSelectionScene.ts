@@ -44,8 +44,12 @@ export class RivalSelectionScene extends Phaser.Scene {
     this.borders = [];
     this.isSelecting = false;
 
+    // 🔧 MODO DESARROLLO: Solo 2 equipos (índice 0 y 1)
+    const DEV_MODE = false;
+    const MAX_TEAMS_DEV = 2;
+
     // Verificar si debemos mostrar el Dark Boss
-    const totalNormalRivals = TEAMS.length - 2; // Excluir jugador y Dark Boss
+    const totalNormalRivals = DEV_MODE ? MAX_TEAMS_DEV - 1 : TEAMS.length - 2; // Excluir jugador y Dark Boss
     const isTimeForDarkBoss = this.defeatedRivals.length >= totalNormalRivals;
 
     if (isTimeForDarkBoss) {
@@ -74,6 +78,9 @@ export class RivalSelectionScene extends Phaser.Scene {
     const startY = (height - totalHeight) / 2;
 
     TEAMS.forEach((team, index) => {
+      // 🔧 MODO DESARROLLO: Solo mostrar primeros 2 equipos
+      if (DEV_MODE && index >= MAX_TEAMS_DEV) return;
+
       // Excluir al Dark Boss (último equipo) de la lista visible
       if (index === TEAMS.length - 1) return;
 
@@ -163,14 +170,23 @@ export class RivalSelectionScene extends Phaser.Scene {
     let iterations = 0;
     const maxIterations = 8 + Phaser.Math.Between(1, 3); // Entre 9 y 11 iteraciones (mucho más corto)
 
+    // 🔧 MODO DESARROLLO: Solo 2 equipos
+    const DEV_MODE = false;
+    const MAX_TEAMS_DEV = 2;
+
     // Seleccionar rival aleatorio (excluyendo jugador, derrotados y Dark Boss)
     const darkBossIndex = TEAMS.length - 1;
-    const availableIndices = TEAMS.map((_, i) => i).filter(
-      (i) =>
+    const maxTeams = DEV_MODE ? MAX_TEAMS_DEV : TEAMS.length;
+    const availableIndices = [];
+    for (let i = 0; i < maxTeams; i++) {
+      if (
         i !== this.selectedTeamIndex &&
         !this.defeatedRivals.includes(i) &&
         i !== darkBossIndex
-    );
+      ) {
+        availableIndices.push(i);
+      }
+    }
 
     // Si solo queda un rival, seleccionarlo directamente
     if (availableIndices.length === 1) {
@@ -199,7 +215,7 @@ export class RivalSelectionScene extends Phaser.Scene {
 
       // Reproducir sonido de confirmación y continuar
       this.time.delayedCall(blinkCount * blinkDuration * 2, () => {
-        this.sound.play("sfx-confirm", { volume: 0.8 });
+        this.sound.play("sfx-start", { volume: 0.8 });
       });
 
       this.time.delayedCall(blinkCount * blinkDuration * 2 + 500, () => {
@@ -229,14 +245,36 @@ export class RivalSelectionScene extends Phaser.Scene {
 
       // Seleccionar siguiente ALEATORIO (saltando jugador, derrotados y Dark Boss)
       const darkBossIndex = TEAMS.length - 1;
+
+      // 🔧 MODO DESARROLLO: Solo 2 equipos
+      const DEV_MODE = false;
+      const MAX_TEAMS_DEV = 2;
+
+      // Contar cuántos rivales quedan disponibles
+      const availableRivals = [];
+      const maxIndex = DEV_MODE ? MAX_TEAMS_DEV : TEAMS.length - 1;
+      for (let i = 0; i < maxIndex; i++) {
+        // Excluir Dark Boss
+        if (i !== this.selectedTeamIndex && !this.defeatedRivals.includes(i)) {
+          availableRivals.push(i);
+        }
+      }
+
+      // Si solo queda un rival, seleccionarlo directamente
       let newIndex;
-      do {
-        newIndex = Phaser.Math.Between(0, TEAMS.length - 2); // Excluir Dark Boss del rango
-      } while (
-        newIndex === this.selectedTeamIndex ||
-        newIndex === currentIndex ||
-        this.defeatedRivals.includes(newIndex)
-      );
+      if (availableRivals.length === 1) {
+        newIndex = availableRivals[0];
+      } else {
+        // Selección aleatoria normal
+        const maxRandomIndex = DEV_MODE ? MAX_TEAMS_DEV - 1 : TEAMS.length - 2;
+        do {
+          newIndex = Phaser.Math.Between(0, maxRandomIndex); // Excluir Dark Boss del rango
+        } while (
+          newIndex === this.selectedTeamIndex ||
+          newIndex === currentIndex ||
+          this.defeatedRivals.includes(newIndex)
+        );
+      }
 
       currentIndex = newIndex;
 
@@ -282,13 +320,14 @@ export class RivalSelectionScene extends Phaser.Scene {
 
     // (Eliminada animación de celebración de escala para cumplir requisito: solo borde)
 
+    // Obtener dimensiones una sola vez
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
     // Esperar un momento antes de mostrar el overlay
     this.time.delayedCall(800, () => {
-      const width = this.cameras.main.width;
-      const height = this.cameras.main.height;
-      const centerX = width / 2;
-      const centerY = height / 2;
-
       // Overlay oscuro
       const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.85);
       overlay.setOrigin(0, 0);
@@ -343,8 +382,43 @@ export class RivalSelectionScene extends Phaser.Scene {
       });
     });
 
-    // Transición con más tiempo para leer el overlay del rival
-    this.time.delayedCall(2200, () => {
+    // Precargar estado del SDK antes de la transición
+    this.time.delayedCall(1800, async () => {
+      // Mostrar texto de carga
+      const loadingText = this.add.text(centerX, centerY + 100, "Loading...", {
+        fontSize: "24px",
+        color: "#03eae9",
+        fontFamily: "Orbitron",
+        fontStyle: "bold",
+      });
+      loadingText.setOrigin(0.5, 0.5);
+      loadingText.setDepth(102);
+      loadingText.setAlpha(0);
+
+      this.tweens.add({
+        targets: loadingText,
+        alpha: 1,
+        duration: 300,
+      });
+
+      // Intentar cargar estado del SDK
+      let sdkState = null;
+      if (window.FarcadeSDK?.singlePlayer?.actions?.ready) {
+        try {
+          const sdkTimeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("SDK timeout")), 3000)
+          );
+          const sdkReady = window.FarcadeSDK.singlePlayer.actions.ready();
+          const gameInfo = (await Promise.race([sdkReady, sdkTimeout])) as any;
+          if (gameInfo?.initialGameState?.gameState) {
+            sdkState = gameInfo.initialGameState.gameState;
+          }
+        } catch (error) {
+          console.log("SDK no disponible, continuando sin estado guardado");
+        }
+      }
+
+      // Transición con estado precargado
       this.cameras.main.fadeOut(300, 0, 0, 0);
       this.cameras.main.once("camerafadeoutcomplete", () => {
         this.scene.start("BattleScene", {
@@ -353,6 +427,7 @@ export class RivalSelectionScene extends Phaser.Scene {
           selectedTeamIndex: this.selectedTeamIndex,
           defeatedRivals: this.defeatedRivals || [],
           currentScore: this.currentScore,
+          sdkState: sdkState, // Pasar estado precargado
         });
       });
     });
@@ -492,8 +567,43 @@ export class RivalSelectionScene extends Phaser.Scene {
       });
     });
 
-    // Transición a la batalla
-    this.time.delayedCall(3500, () => {
+    // Precargar SDK y transición a la batalla
+    this.time.delayedCall(3000, async () => {
+      // Mostrar texto de carga
+      const loadingText = this.add.text(centerX, centerY + 250, "Loading...", {
+        fontSize: "24px",
+        color: "#8B0000",
+        fontFamily: "Orbitron",
+        fontStyle: "bold",
+      });
+      loadingText.setOrigin(0.5, 0.5);
+      loadingText.setDepth(15);
+      loadingText.setAlpha(0);
+
+      this.tweens.add({
+        targets: loadingText,
+        alpha: 1,
+        duration: 300,
+      });
+
+      // Intentar cargar estado del SDK
+      let sdkState = null;
+      if (window.FarcadeSDK?.singlePlayer?.actions?.ready) {
+        try {
+          const sdkTimeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("SDK timeout")), 3000)
+          );
+          const sdkReady = window.FarcadeSDK.singlePlayer.actions.ready();
+          const gameInfo = (await Promise.race([sdkReady, sdkTimeout])) as any;
+          if (gameInfo?.initialGameState?.gameState) {
+            sdkState = gameInfo.initialGameState.gameState;
+          }
+        } catch (error) {
+          console.log("SDK no disponible, continuando sin estado guardado");
+        }
+      }
+
+      // Transición con estado precargado
       this.cameras.main.fadeOut(500, 0, 0, 0);
       this.cameras.main.once("camerafadeoutcomplete", () => {
         this.scene.start("BattleScene", {
@@ -503,6 +613,7 @@ export class RivalSelectionScene extends Phaser.Scene {
           defeatedRivals: this.defeatedRivals || [],
           currentScore: this.currentScore,
           isDarkBoss: true, // Flag para indicar que es el boss final
+          sdkState: sdkState, // Pasar estado precargado
         });
       });
     });

@@ -330,7 +330,10 @@ export class CharacterSelectionScene extends Phaser.Scene {
   }
 
   nextTeam(charImages: { [key: string]: string }) {
-    const maxIndex = TEAMS.length - 2; // Excluir Dark Champion (último equipo)
+    // 🔧 MODO DESARROLLO: Solo 2 equipos
+    const DEV_MODE = false;
+    const MAX_TEAMS_DEV = 2;
+    const maxIndex = DEV_MODE ? MAX_TEAMS_DEV - 1 : TEAMS.length - 2; // Excluir Dark Champion (último equipo)
     if (this.currentIndex < maxIndex) {
       this.currentIndex++;
     } else {
@@ -341,7 +344,10 @@ export class CharacterSelectionScene extends Phaser.Scene {
   }
 
   previousTeam(charImages: { [key: string]: string }) {
-    const maxIndex = TEAMS.length - 2; // Excluir Dark Champion (último equipo)
+    // 🔧 MODO DESARROLLO: Solo 2 equipos
+    const DEV_MODE = false;
+    const MAX_TEAMS_DEV = 2;
+    const maxIndex = DEV_MODE ? MAX_TEAMS_DEV - 1 : TEAMS.length - 2; // Excluir Dark Champion (último equipo)
     if (this.currentIndex > 0) {
       this.currentIndex--;
     } else {

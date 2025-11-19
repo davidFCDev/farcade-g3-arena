@@ -251,8 +251,11 @@ export class BattleScene extends Phaser.Scene {
     const centerX = width / 2;
     const centerY = height / 2;
 
-    // Cargar estado guardado de tutoriales desde SDK (con timeout para evitar bloqueos en móvil)
-    if (window.FarcadeSDK?.singlePlayer?.actions?.ready) {
+    // Usar estado precargado si está disponible, sino intentar cargarlo
+    const sceneData = this.scene.settings.data as any;
+    let savedState = sceneData?.sdkState;
+
+    if (!savedState && window.FarcadeSDK?.singlePlayer?.actions?.ready) {
       try {
         // Timeout de 3 segundos para evitar bloqueos indefinidos
         const sdkTimeout = new Promise((_, reject) =>
@@ -266,21 +269,25 @@ export class BattleScene extends Phaser.Scene {
         const gameInfo = (await Promise.race([sdkReady, sdkTimeout])) as any;
 
         if (gameInfo?.initialGameState?.gameState) {
-          const savedState = gameInfo.initialGameState.gameState;
-          this.hasSeenSmashTutorial =
-            (savedState.hasSeenSmashTutorial as boolean) || false;
-          this.hasSeenShieldTutorial =
-            (savedState.hasSeenShieldTutorial as boolean) || false;
-          this.hasSeenStealTutorial =
-            (savedState.hasSeenStealTutorial as boolean) || false;
-          this.hasSeenSpecialTutorial =
-            (savedState.hasSeenSpecialTutorial as boolean) || false;
-          this.hasSeenRivalAttackTutorial =
-            (savedState.hasSeenRivalAttackTutorial as boolean) || false;
+          savedState = gameInfo.initialGameState.gameState;
         }
       } catch (error) {
         console.log("No se pudo cargar el estado del juego:", error);
       }
+    }
+
+    // Aplicar estado guardado si existe
+    if (savedState) {
+      this.hasSeenSmashTutorial =
+        (savedState.hasSeenSmashTutorial as boolean) || false;
+      this.hasSeenShieldTutorial =
+        (savedState.hasSeenShieldTutorial as boolean) || false;
+      this.hasSeenStealTutorial =
+        (savedState.hasSeenStealTutorial as boolean) || false;
+      this.hasSeenSpecialTutorial =
+        (savedState.hasSeenSpecialTutorial as boolean) || false;
+      this.hasSeenRivalAttackTutorial =
+        (savedState.hasSeenRivalAttackTutorial as boolean) || false;
     }
 
     // RESET COMPLETO del estado de la batalla
@@ -5884,10 +5891,10 @@ export class BattleScene extends Phaser.Scene {
         isCompleteVictory
       );
     } else {
-      // DERROTA: Mostrar botón Quit y enviar gameOver
-      this.time.delayedCall(2000, () => {
-        this.createVictoryButtons(centerX, centerY, [], true);
-      });
+      // DERROTA: Pantalla estática sin animaciones
+      // Mostrar overlay inmediatamente sin fade
+      overlay.setAlpha(0.85);
+      text.setAlpha(1);
 
       // Enviar gameOver en caso de derrota
       if (window.FarcadeSDK?.singlePlayer?.actions?.gameOver) {
@@ -5896,13 +5903,8 @@ export class BattleScene extends Phaser.Scene {
         });
       }
 
-      // Si perdió, esperar y volver al menú
-      this.time.delayedCall(3000, () => {
-        this.cameras.main.fadeOut(500, 0, 0, 0);
-        this.cameras.main.once("camerafadeoutcomplete", () => {
-          this.scene.start("MainMenuScene");
-        });
-      });
+      // No hacer nada más - esperar a que el jugador pulse "play again" desde el SDK
+      // El listener de "play_again" en create() manejará el reinicio
     }
   }
 
