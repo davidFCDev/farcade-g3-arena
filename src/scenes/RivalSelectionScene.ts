@@ -34,28 +34,49 @@ export class RivalSelectionScene extends Phaser.Scene {
   preload() {}
 
   create() {
-    const width = 720;
-    const height = 1080;
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Limpiar arrays de la vuelta anterior
     this.cards = [];
     this.borders = [];
     this.isSelecting = false;
 
-    // Fondo
-    const bg = this.add.image(360, 540, "rival-bg");
-    bg.setDisplaySize(width, height);
+    // Verificar si debemos mostrar el Dark Boss
+    const totalNormalRivals = TEAMS.length - 2; // Excluir jugador y Dark Boss
+    const isTimeForDarkBoss = this.defeatedRivals.length >= totalNormalRivals;
+
+    if (isTimeForDarkBoss) {
+      // Mostrar pantalla del Dark Champion
+      this.time.delayedCall(100, () => {
+        this.showDarkBossAppearance();
+      });
+      return;
+    }
+
+    // Flujo normal de selección de rivales
+    // Fondo - ajustar para cubrir toda la pantalla
+    const bg = this.add.image(centerX, centerY, "rival-bg");
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale);
     bg.setDepth(0);
 
     // Crear grid de 2 columnas x 4 filas
     const cardWidth = 280;
-    const cardHeight = 220; // Reducido para que quepan mejor
+    const cardHeight = 220;
     const padding = 20;
-    const totalHeight = cardHeight * 4 + padding * 3; // Altura total del grid
+    const totalHeight = cardHeight * 4 + padding * 3;
     const startX = (width - (cardWidth * 2 + padding)) / 2;
-    const startY = (height - totalHeight) / 2; // Centrado vertical perfecto
+    const startY = (height - totalHeight) / 2;
 
     TEAMS.forEach((team, index) => {
+      // Excluir al Dark Boss (último equipo) de la lista visible
+      if (index === TEAMS.length - 1) return;
+
       const col = index % 2;
       const row = Math.floor(index / 2);
       const x = startX + col * (cardWidth + padding);
@@ -64,20 +85,20 @@ export class RivalSelectionScene extends Phaser.Scene {
       // Container para la card
       const card = this.add.container(x, y);
 
-      // Border (graphics con esquinas redondeadas)
+      // Border
       const border = this.add.graphics();
       border.lineStyle(6, 0x333333, 1);
-      border.strokeRoundedRect(0, 0, cardWidth, cardHeight, 12); // Radio de 12px
+      border.strokeRoundedRect(0, 0, cardWidth, cardHeight, 12);
       card.add(border);
       this.borders.push(border);
 
-      // Fondo de la card (muy transparente con esquinas redondeadas)
+      // Fondo de la card
       const cardBg = this.add.graphics();
       cardBg.fillStyle(0x1a1a1a, 0.3);
       cardBg.fillRoundedRect(6, 6, cardWidth - 12, cardHeight - 12, 10);
       card.add(cardBg);
 
-      // Imagen del trainer (más grande)
+      // Imagen del trainer
       const trainerImg = this.add.image(
         cardWidth / 2,
         cardHeight / 2 - 10,
@@ -90,7 +111,7 @@ export class RivalSelectionScene extends Phaser.Scene {
       trainerImg.setScale(scale);
       card.add(trainerImg);
 
-      // Nombre del equipo (más grande con sombra)
+      // Nombre del equipo
       const teamName = this.add.text(
         cardWidth / 2,
         cardHeight - 20,
@@ -142,9 +163,13 @@ export class RivalSelectionScene extends Phaser.Scene {
     let iterations = 0;
     const maxIterations = 8 + Phaser.Math.Between(1, 3); // Entre 9 y 11 iteraciones (mucho más corto)
 
-    // Seleccionar rival aleatorio (excluyendo jugador y derrotados)
+    // Seleccionar rival aleatorio (excluyendo jugador, derrotados y Dark Boss)
+    const darkBossIndex = TEAMS.length - 1;
     const availableIndices = TEAMS.map((_, i) => i).filter(
-      (i) => i !== this.selectedTeamIndex && !this.defeatedRivals.includes(i)
+      (i) =>
+        i !== this.selectedTeamIndex &&
+        !this.defeatedRivals.includes(i) &&
+        i !== darkBossIndex
     );
 
     // Si solo queda un rival, seleccionarlo directamente
@@ -202,10 +227,11 @@ export class RivalSelectionScene extends Phaser.Scene {
         this.borders[currentIndex].strokeRoundedRect(0, 0, 280, 220, 12);
       }
 
-      // Seleccionar siguiente ALEATORIO (saltando jugador y derrotados)
+      // Seleccionar siguiente ALEATORIO (saltando jugador, derrotados y Dark Boss)
+      const darkBossIndex = TEAMS.length - 1;
       let newIndex;
       do {
-        newIndex = Phaser.Math.Between(0, TEAMS.length - 1);
+        newIndex = Phaser.Math.Between(0, TEAMS.length - 2); // Excluir Dark Boss del rango
       } while (
         newIndex === this.selectedTeamIndex ||
         newIndex === currentIndex ||
@@ -258,8 +284,10 @@ export class RivalSelectionScene extends Phaser.Scene {
 
     // Esperar un momento antes de mostrar el overlay
     this.time.delayedCall(800, () => {
-      const width = 720;
-      const height = 1080;
+      const width = this.cameras.main.width;
+      const height = this.cameras.main.height;
+      const centerX = width / 2;
+      const centerY = height / 2;
 
       // Overlay oscuro
       const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.85);
@@ -274,8 +302,8 @@ export class RivalSelectionScene extends Phaser.Scene {
 
       // Texto del overlay
       const overlayText = this.add.text(
-        360,
-        540,
+        centerX,
+        centerY,
         `${rivalTeamName}\nJOINS THE FIGHT`,
         {
           fontSize: "40px",
@@ -325,6 +353,156 @@ export class RivalSelectionScene extends Phaser.Scene {
           selectedTeamIndex: this.selectedTeamIndex,
           defeatedRivals: this.defeatedRivals || [],
           currentScore: this.currentScore,
+        });
+      });
+    });
+  }
+
+  showDarkBossAppearance() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Fondo oscuro dramático
+    const bg = this.add.rectangle(0, 0, width, height, 0x0a0a0a);
+    bg.setOrigin(0, 0);
+    bg.setDepth(0);
+
+    // Efectos de rayos rojos oscuros
+    for (let i = 0; i < 8; i++) {
+      const ray = this.add.rectangle(
+        Phaser.Math.Between(0, width),
+        Phaser.Math.Between(0, height),
+        4,
+        Phaser.Math.Between(200, 400),
+        0x8b0000,
+        0.3
+      );
+      ray.setRotation(Phaser.Math.FloatBetween(0, Math.PI * 2));
+      ray.setDepth(1);
+
+      this.tweens.add({
+        targets: ray,
+        alpha: 0,
+        scaleX: 2,
+        duration: 2000,
+        repeat: -1,
+        yoyo: true,
+      });
+    }
+
+    // Mensaje principal "DARK BOSS APPEARED!"
+    const mainText = this.add.text(centerX, centerY - 240, "DARK BOSS", {
+      fontSize: "72px",
+      color: "#8B0000",
+      fontFamily: "Orbitron",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 8,
+      align: "center",
+      shadow: {
+        offsetX: 6,
+        offsetY: 6,
+        color: "#000000",
+        blur: 12,
+        fill: true,
+      },
+    });
+    mainText.setOrigin(0.5, 0.5);
+    mainText.setDepth(10);
+    mainText.setAlpha(0);
+
+    const subText = this.add.text(centerX, centerY - 140, "APPEARED!", {
+      fontSize: "56px",
+      color: "#ffffff",
+      fontFamily: "Orbitron",
+      fontStyle: "bold",
+      stroke: "#8B0000",
+      strokeThickness: 6,
+      align: "center",
+      shadow: {
+        offsetX: 5,
+        offsetY: 5,
+        color: "#8B0000",
+        blur: 10,
+        fill: true,
+      },
+    });
+    subText.setOrigin(0.5, 0.5);
+    subText.setDepth(10);
+    subText.setAlpha(0);
+
+    // Imagen del Dark Champion
+    const darkChampionIndex = TEAMS.length - 1; // Último equipo (Dark Champion)
+    const trainerImg = this.add.image(
+      centerX,
+      centerY + 110,
+      `trainer-${darkChampionIndex}`
+    );
+    trainerImg.setScale(1.5);
+    trainerImg.setDepth(5);
+    trainerImg.setAlpha(0);
+
+    // Brillo rojo detrás del trainer
+    const glow = this.add.circle(centerX, centerY + 110, 150, 0x8b0000, 0.4);
+    glow.setDepth(4);
+    glow.setAlpha(0);
+
+    // Animaciones de aparición
+    this.tweens.add({
+      targets: mainText,
+      alpha: 1,
+      scale: { from: 0.5, to: 1.2 },
+      duration: 800,
+      ease: "Back.easeOut",
+    });
+
+    this.time.delayedCall(400, () => {
+      this.tweens.add({
+        targets: subText,
+        alpha: 1,
+        scale: { from: 0.5, to: 1.1 },
+        duration: 800,
+        ease: "Back.easeOut",
+      });
+      // Sonido opcional (si está cargado)
+      if (this.sound.get("sfx-start")) {
+        this.sound.play("sfx-start", { volume: 1.0 });
+      }
+    });
+
+    this.time.delayedCall(1000, () => {
+      this.tweens.add({
+        targets: [trainerImg, glow],
+        alpha: 1,
+        y: 600,
+        duration: 1000,
+        ease: "Power2",
+      });
+
+      // Pulso del brillo
+      this.tweens.add({
+        targets: glow,
+        scale: { from: 1, to: 1.3 },
+        alpha: { from: 0.4, to: 0.2 },
+        duration: 1500,
+        repeat: -1,
+        yoyo: true,
+      });
+    });
+
+    // Transición a la batalla
+    this.time.delayedCall(3500, () => {
+      this.cameras.main.fadeOut(500, 0, 0, 0);
+      this.cameras.main.once("camerafadeoutcomplete", () => {
+        this.scene.start("BattleScene", {
+          selectedTeam: TEAMS[this.selectedTeamIndex],
+          rivalTeam: TEAMS[darkChampionIndex],
+          selectedTeamIndex: this.selectedTeamIndex,
+          defeatedRivals: this.defeatedRivals || [],
+          currentScore: this.currentScore,
+          isDarkBoss: true, // Flag para indicar que es el boss final
         });
       });
     });

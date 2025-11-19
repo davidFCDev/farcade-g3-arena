@@ -88,6 +88,12 @@ export class PreloadScene extends Phaser.Scene {
       "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/map3.webp"
     );
 
+    // Mapa especial del Dark Boss
+    this.load.image(
+      "battle-bg-darkboss",
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/Dise%C3%B1o+sin+t%C3%ADtulo+(97).png"
+    );
+
     // --- UI GENERAL / SELECCIÓN DE PERSONAJE ---
     this.load.image(
       "pokedex",

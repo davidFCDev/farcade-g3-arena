@@ -93,6 +93,9 @@ export class BattleScene extends Phaser.Scene {
   private battleSuccessfulHits: number = 0;
   private scoreText?: Phaser.GameObjects.Text;
 
+  // Flag para Dark Boss
+  private isDarkBoss: boolean = false;
+
   // Sistema de tutoriales (solo primera vez)
   private hasSeenSmashTutorial: boolean = false;
   private hasSeenShieldTutorial: boolean = false;
@@ -169,6 +172,9 @@ export class BattleScene extends Phaser.Scene {
       ? data.defeatedRivals
       : [];
 
+    // Flag de Dark Boss
+    this.isDarkBoss = data?.isDarkBoss === true;
+
     // Índice del rival actual
     if (data && data.rivalTeam) {
       const idx = TEAMS.findIndex((t) => t.id === data.rivalTeam.id);
@@ -206,10 +212,15 @@ export class BattleScene extends Phaser.Scene {
     // No eliminamos texturas precargadas globalmente, solo gestionamos
     // fondos y sprites especiales por key.
 
-    // Background - selección aleatoria de 3 mapas ya precargados en PreloadScene
-    const backgrounds = ["battle-bg-1", "battle-bg-2", "battle-bg-3"];
-    const selectedBackground =
-      backgrounds[Math.floor(Math.random() * backgrounds.length)];
+    // Background - selección especial para Dark Boss o aleatoria para otros
+    let selectedBackground: string;
+    if (this.isDarkBoss) {
+      selectedBackground = "battle-bg-darkboss";
+    } else {
+      const backgrounds = ["battle-bg-1", "battle-bg-2", "battle-bg-3"];
+      selectedBackground =
+        backgrounds[Math.floor(Math.random() * backgrounds.length)];
+    }
 
     // Guardar la key elegida para usarla directamente en create()
     (this as any).selectedBackgroundKey = selectedBackground;
@@ -235,8 +246,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   async create() {
-    const width = 720;
-    const height = 1080;
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Cargar estado guardado de tutoriales desde SDK (con timeout para evitar bloqueos en móvil)
     if (window.FarcadeSDK?.singlePlayer?.actions?.ready) {
@@ -274,7 +287,8 @@ export class BattleScene extends Phaser.Scene {
     this.playerHPSections = 10;
     this.enemyHPSections = 10;
     this.playerShieldSections = 0;
-    this.enemyShieldSections = 0;
+    // Dark Boss inicia con escudo completo
+    this.enemyShieldSections = this.isDarkBoss ? 10 : 0;
     this.isPlayerTurn = false;
     this.rivalTurnCount = 0;
     this.battleStarted = false;
@@ -318,7 +332,7 @@ export class BattleScene extends Phaser.Scene {
 
     // Background (usa la key seleccionada en preload)
     const bgKey = (this as any).selectedBackgroundKey || "battle-bg-1";
-    this.background = this.add.image(width / 2, height / 2, bgKey);
+    this.background = this.add.image(centerX, centerY, bgKey);
     const scale = Math.max(
       width / this.background.width,
       height / this.background.height
@@ -526,7 +540,7 @@ export class BattleScene extends Phaser.Scene {
 
     // === UI ZONE ===
     // Zona inferior pegada al bottom de la pantalla
-    const uiZone = this.add.image(width / 2, height, "uiZone");
+    const uiZone = this.add.image(centerX, height, "uiZone");
 
     // Escalar la imagen para cubrir el ancho completo y anclar al bottom
     const uiScale = width / uiZone.width;
@@ -1172,16 +1186,28 @@ export class BattleScene extends Phaser.Scene {
 
   executeRivalAction(): void {
     // Elegir acción aleatoria
-    let actions: string[] = ["attack", "defense"];
+    let actions: string[];
+
+    // Dark Boss nunca usa Defense, usa Steal en su lugar
+    if (this.isDarkBoss) {
+      actions = ["attack", "steal"];
+    } else {
+      actions = ["attack", "defense"];
+    }
 
     // Si ya evolucionó, puede usar Special también
     if (this.isEnemyEvolved) {
       actions.push("special");
     }
 
-    // Si la última acción fue defense, quitarla de las opciones disponibles
-    if (this.lastRivalAction === "defense") {
-      actions = actions.filter((action) => action !== "defense");
+    // Si la última acción fue defense o steal, quitarla de las opciones disponibles
+    if (
+      this.lastRivalAction === "defense" ||
+      this.lastRivalAction === "steal"
+    ) {
+      actions = actions.filter(
+        (action) => action !== "defense" && action !== "steal"
+      );
     }
 
     const randomAction = Phaser.Math.RND.pick(actions);
@@ -1197,6 +1223,9 @@ export class BattleScene extends Phaser.Scene {
         break;
       case "defense":
         this.performRivalDefense();
+        break;
+      case "steal":
+        this.performRivalSteal();
         break;
       case "special":
         this.performRivalSpecial();
@@ -1311,6 +1340,425 @@ export class BattleScene extends Phaser.Scene {
     // Cambiar turno al jugador
     this.time.delayedCall(1000, () => {
       this.switchTurn();
+    });
+  }
+
+  performRivalSteal(): void {
+    console.log("💰 Rival usa Steal!");
+
+    // Mostrar mensaje en el chat
+    const enemyName = this.enemyTeam.trainer.monster.name;
+    this.updateBattleChat(`▶ ${enemyName} uses Steal!`);
+
+    // Mostrar minijuego de Steal para el jugador
+    this.showRivalStealMinigame();
+  }
+
+  showRivalStealMinigame(): void {
+    this.isMinigameActive = true;
+
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+
+    // Overlay oscuro de fondo
+    const overlay = this.add.rectangle(
+      centerX,
+      centerY,
+      this.cameras.main.width,
+      this.cameras.main.height,
+      0x000000,
+      0.7
+    );
+    overlay.setDepth(2000);
+    overlay.setInteractive();
+
+    // Variables del minijuego
+    let isMinigameActive = true;
+    let hasCompleted = false;
+    let successfulTaps = 0;
+    let totalAttempts = 0;
+    const totalTapsNeeded = 3;
+
+    // Configuración de círculos
+    const outerRadius = 140;
+    const innerRadius = 100;
+    const sphereOrbitRadius = 100;
+    const sphereRadius = 12;
+
+    let greenZoneSize = 30;
+    let sphereSpeed = 3;
+    let sphereDirection = 1;
+
+    const generateGreenZone = (previousAngle?: number) => {
+      if (previousAngle === undefined) {
+        return Phaser.Math.Between(0, 360);
+      }
+      return (previousAngle + 180 + Phaser.Math.Between(-30, 30)) % 360;
+    };
+
+    let greenZoneAngle = generateGreenZone();
+
+    // Círculo exterior grande - blanco
+    const outerCircle = this.add.circle(
+      centerX,
+      centerY,
+      outerRadius,
+      0x000000,
+      0
+    );
+    outerCircle.setStrokeStyle(8, 0xffffff, 1);
+    outerCircle.setDepth(2001);
+
+    // Círculo interior
+    const innerCircle = this.add.circle(
+      centerX,
+      centerY,
+      innerRadius,
+      0x000000,
+      0
+    );
+    innerCircle.setStrokeStyle(5, 0x444444, 1);
+    innerCircle.setDepth(2001);
+
+    // Zona verde
+    const greenZone = this.add.graphics();
+    greenZone.setDepth(2002);
+
+    const drawGreenZone = () => {
+      greenZone.clear();
+      greenZone.lineStyle(8, 0x00ff00, 1);
+      greenZone.beginPath();
+      const greenZoneStart = Phaser.Math.DegToRad(
+        greenZoneAngle - greenZoneSize / 2
+      );
+      const greenZoneEnd = Phaser.Math.DegToRad(
+        greenZoneAngle + greenZoneSize / 2
+      );
+      greenZone.arc(
+        centerX,
+        centerY,
+        outerRadius,
+        greenZoneStart,
+        greenZoneEnd,
+        false
+      );
+      greenZone.strokePath();
+    };
+
+    drawGreenZone();
+
+    // Flecha verde
+    const arrow = this.add.graphics();
+    arrow.setDepth(2003);
+
+    const drawArrow = () => {
+      arrow.clear();
+      const arrowAngle = Phaser.Math.DegToRad(greenZoneAngle);
+      const arrowDistance = outerRadius + 20;
+      const arrowX = centerX + Math.cos(arrowAngle) * arrowDistance;
+      const arrowY = centerY + Math.sin(arrowAngle) * arrowDistance;
+
+      const arrowSize = 12;
+      const angle1 = arrowAngle + Math.PI / 6;
+      const angle2 = arrowAngle - Math.PI / 6;
+
+      arrow.fillStyle(0x00ff00, 1);
+      arrow.beginPath();
+      arrow.moveTo(arrowX, arrowY);
+      arrow.lineTo(
+        arrowX + Math.cos(angle1) * arrowSize,
+        arrowY + Math.sin(angle1) * arrowSize
+      );
+      arrow.lineTo(
+        arrowX + Math.cos(angle2) * arrowSize,
+        arrowY + Math.sin(angle2) * arrowSize
+      );
+      arrow.closePath();
+      arrow.fillPath();
+    };
+
+    drawArrow();
+
+    // Esfera que gira
+    let sphereAngle = (greenZoneAngle + 180) % 360;
+
+    const sphere = this.add.circle(
+      centerX + Math.cos(Phaser.Math.DegToRad(sphereAngle)) * sphereOrbitRadius,
+      centerY + Math.sin(Phaser.Math.DegToRad(sphereAngle)) * sphereOrbitRadius,
+      sphereRadius,
+      0xffffff,
+      1
+    );
+    sphere.setDepth(2004);
+    sphere.setBlendMode(Phaser.BlendModes.ADD);
+
+    const sphereGlow = this.add.circle(sphere.x, sphere.y, 20, 0x00ffff, 0.5);
+    sphereGlow.setDepth(2004);
+    sphereGlow.setBlendMode(Phaser.BlendModes.ADD);
+
+    const sparkParticles = this.add.particles(sphere.x, sphere.y, "pixel", {
+      speed: { min: 40, max: 100 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 1, end: 0 },
+      lifespan: 400,
+      frequency: 30,
+      tint: [0x00ffff, 0x00ff00, 0xffffff],
+      blendMode: "ADD",
+      follow: sphere,
+      quantity: 2,
+    });
+    sparkParticles.setDepth(2003);
+
+    this.tweens.add({
+      targets: [sphere, sphereGlow],
+      scale: { from: 1, to: 1.2 },
+      alpha: { from: 1, to: 0.7 },
+      duration: 300,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut",
+    });
+
+    const isSphereInGreenZone = (): boolean => {
+      const normalizedAngle = ((sphereAngle % 360) + 360) % 360;
+      const normalizedGreenAngle = ((greenZoneAngle % 360) + 360) % 360;
+
+      let angleDiff = Math.abs(normalizedAngle - normalizedGreenAngle);
+      if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+      return angleDiff <= greenZoneSize / 2;
+    };
+
+    const updateLoop = this.time.addEvent({
+      delay: 16,
+      callback: () => {
+        if (!isMinigameActive || hasCompleted) {
+          updateLoop.remove();
+          return;
+        }
+
+        sphereAngle = (sphereAngle + sphereSpeed * sphereDirection) % 360;
+        if (sphereAngle < 0) sphereAngle += 360;
+
+        const radians = Phaser.Math.DegToRad(sphereAngle);
+        const newX = centerX + Math.cos(radians) * sphereOrbitRadius;
+        const newY = centerY + Math.sin(radians) * sphereOrbitRadius;
+
+        sphere.setPosition(newX, newY);
+        sphereGlow.setPosition(newX, newY);
+      },
+      loop: true,
+    });
+
+    const endMinigame = () => {
+      if (!isMinigameActive || hasCompleted) return;
+      isMinigameActive = false;
+      hasCompleted = true;
+
+      this.isMinigameActive = false;
+      updateLoop.remove();
+
+      this.time.delayedCall(800, () => {
+        overlay.destroy();
+        outerCircle.destroy();
+        innerCircle.destroy();
+        greenZone.destroy();
+        arrow.destroy();
+        sphere.destroy();
+        sphereGlow.destroy();
+        sparkParticles.destroy();
+
+        // Ejecutar resultado con lógica invertida (daño al jugador)
+        this.executeRivalStealResult(successfulTaps);
+      });
+    };
+
+    const handleTap = () => {
+      if (!isMinigameActive || hasCompleted || totalAttempts >= totalTapsNeeded)
+        return;
+
+      const inGreenZone = isSphereInGreenZone();
+
+      if (inGreenZone) {
+        successfulTaps++;
+        totalAttempts++;
+
+        this.sound.play("sfx-sphere-hit", { volume: 0.1 });
+
+        const flashText = this.add.text(centerX, centerY + 80, "SUCCESS!", {
+          fontSize: "36px",
+          color: "#00ff00",
+          fontFamily: "Orbitron",
+          fontStyle: "bold",
+          stroke: "#000000",
+          strokeThickness: 6,
+        });
+        flashText.setOrigin(0.5);
+        flashText.setDepth(2006);
+
+        this.tweens.add({
+          targets: flashText,
+          scale: { from: 1.5, to: 1 },
+          alpha: { from: 1, to: 0 },
+          y: centerY + 50,
+          duration: 400,
+          ease: "Back.easeOut",
+          onComplete: () => {
+            flashText.destroy();
+          },
+        });
+
+        if (totalAttempts >= totalTapsNeeded) {
+          endMinigame();
+        } else {
+          sphereDirection *= -1;
+
+          if (totalAttempts === 1) {
+            sphereSpeed = 4.5;
+          } else if (totalAttempts === 2) {
+            sphereSpeed = 6;
+          }
+
+          greenZoneAngle = generateGreenZone(greenZoneAngle);
+          drawGreenZone();
+          drawArrow();
+        }
+      } else {
+        totalAttempts++;
+
+        const missText = this.add.text(centerX, centerY + 80, "MISS!", {
+          fontSize: "36px",
+          color: "#ff0000",
+          fontFamily: "Orbitron",
+          fontStyle: "bold",
+          stroke: "#000000",
+          strokeThickness: 6,
+        });
+        missText.setOrigin(0.5);
+        missText.setDepth(2006);
+
+        this.tweens.add({
+          targets: missText,
+          scale: { from: 1.5, to: 1 },
+          alpha: { from: 1, to: 0 },
+          y: centerY + 50,
+          duration: 400,
+          ease: "Back.easeOut",
+          onComplete: () => {
+            missText.destroy();
+          },
+        });
+
+        if (totalAttempts >= totalTapsNeeded) {
+          endMinigame();
+        } else {
+          sphereDirection *= -1;
+
+          if (totalAttempts === 1) {
+            sphereSpeed = 4.5;
+          } else if (totalAttempts === 2) {
+            sphereSpeed = 6;
+          }
+
+          greenZoneAngle = generateGreenZone(greenZoneAngle);
+          drawGreenZone();
+          drawArrow();
+        }
+      }
+    };
+
+    overlay.on("pointerdown", handleTap);
+  }
+
+  executeRivalStealResult(successfulTaps: number): void {
+    // Lógica invertida: más aciertos del jugador = menos daño recibido
+    // 3 aciertos: -1 HP al jugador
+    // 2 aciertos: -2 HP al jugador, +1 HP al enemigo
+    // 1 acierto: -2 HP al jugador, +2 HP al enemigo
+    // 0 aciertos: -3 HP al jugador, +3 HP al enemigo
+
+    if (successfulTaps === 3) {
+      // 3 ACIERTOS: Solo 1 de daño al jugador
+      this.damagePlayer(1);
+      this.updateBattleChat("⚡ Defended well! Only 1 HP lost!");
+    } else if (successfulTaps === 2) {
+      // 2 ACIERTOS: 2 de daño al jugador + 1 vida al enemigo
+      this.damagePlayer(2);
+
+      // Curar 1 HP al enemigo
+      if (this.enemyHPSections < 10) {
+        this.enemyHPSections++;
+      }
+      this.updateEnemyHPBar(
+        this.enemyHPBarX,
+        this.enemyHPBarY,
+        this.enemyHPBarWidth
+      );
+
+      this.updateBattleChat("⚠️ Partial defense: 2 HP lost, enemy healed 1!");
+    } else if (successfulTaps === 1) {
+      // 1 ACIERTO: 2 de daño al jugador + 2 vida al enemigo
+      this.damagePlayer(2);
+
+      // Curar 2 HP al enemigo
+      for (let i = 0; i < 2; i++) {
+        if (this.enemyHPSections < 10) {
+          this.enemyHPSections++;
+        }
+      }
+      this.updateEnemyHPBar(
+        this.enemyHPBarX,
+        this.enemyHPBarY,
+        this.enemyHPBarWidth
+      );
+
+      this.updateBattleChat("❌ Weak defense: 2 HP lost, enemy healed 2!");
+    } else {
+      // 0 ACIERTOS: 3 de daño al jugador + 3 vida al enemigo
+      this.damagePlayer(3);
+
+      // Curar 3 HP al enemigo
+      for (let i = 0; i < 3; i++) {
+        if (this.enemyHPSections < 10) {
+          this.enemyHPSections++;
+        }
+      }
+      this.updateEnemyHPBar(
+        this.enemyHPBarX,
+        this.enemyHPBarY,
+        this.enemyHPBarWidth
+      );
+
+      this.updateBattleChat("💀 Failed defense: 3 HP lost, enemy healed 3!");
+    }
+
+    // Efecto visual de robo
+    const stealParticles = this.add.particles(
+      this.playerPokemon.x,
+      this.playerPokemon.y,
+      "pixel",
+      {
+        speed: { min: 100, max: 200 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 2, end: 0 },
+        tint: [0xff0000, 0xff6600],
+        lifespan: 600,
+        quantity: 20,
+        blendMode: "ADD",
+      }
+    );
+    stealParticles.setDepth(100);
+
+    this.time.delayedCall(600, () => {
+      stealParticles.destroy();
+    });
+
+    // Verificar victoria/derrota y cambiar turno
+    this.time.delayedCall(800, () => {
+      this.checkBattleEnd();
+      if (this.battleStarted) {
+        this.switchTurn();
+      }
     });
   }
 
@@ -5389,21 +5837,43 @@ export class BattleScene extends Phaser.Scene {
       this.totalScore += victoryBonus;
       this.updateScoreDisplay();
 
-      // Verificar si derrotó a TODOS los rivales (victoria total del juego)
+      // Verificar si derrotó a TODOS los rivales normales (sin contar Dark Boss)
       updatedDefeatedRivals = [...this.defeatedRivals, this.currentRivalIndex];
-      const totalTeams = 8; // Número total de equipos en el juego
-      const maxDefeats = totalTeams - 1; // Todos excepto el equipo del jugador
+      const totalNormalRivals = TEAMS.length - 2; // Excluir jugador y Dark Boss
 
-      if (updatedDefeatedRivals.length >= maxDefeats) {
-        // ¡VICTORIA TOTAL! Derrotó a todos los rivales
+      // Solo es victoria completa si derrotó al Dark Boss
+      if (this.isDarkBoss) {
+        // ¡VICTORIA TOTAL! Derrotó al Dark Boss
         isCompleteVictory = true;
         const finalBonus = 1000; // Bonus especial por completar el juego
         this.totalScore += finalBonus;
         this.updateScoreDisplay();
 
-        // Actualizar el texto de victoria
-        text.setText("VICTORY!\nALL RIVALS DEFEATED!");
-        text.setFontSize("38px");
+        // Actualizar texto
+        text.setText("VICTORY!\nDARK CHAMPION DEFEATED!");
+        text.setFontSize("36px");
+
+        // Enviar game over directamente sin mostrar modal
+        if (window.FarcadeSDK?.singlePlayer?.actions?.gameOver) {
+          window.FarcadeSDK.singlePlayer.actions.gameOver({
+            score: this.totalScore,
+          });
+        }
+
+        // Volver al menú después de un delay
+        this.time.delayedCall(3000, () => {
+          this.cameras.main.fadeOut(500, 0, 0, 0);
+          this.cameras.main.once("camerafadeoutcomplete", () => {
+            this.scene.start("MainMenuScene");
+          });
+        });
+        return; // No mostrar botones
+      }
+
+      // Si derrotó a todos los rivales normales, mostrar botón "Final Battle"
+      if (updatedDefeatedRivals.length >= totalNormalRivals) {
+        text.setText("VICTORY!\nFINAL CHALLENGE AWAITS!");
+        text.setFontSize("36px");
       }
 
       // VICTORIA: Mostrar botones para continuar o abandonar
@@ -5414,8 +5884,12 @@ export class BattleScene extends Phaser.Scene {
         isCompleteVictory
       );
     } else {
-      // DERROTA: Comportamiento automático como antes
-      // Notificar al SDK que el juego terminó con la puntuación final
+      // DERROTA: Mostrar botón Quit y enviar gameOver
+      this.time.delayedCall(2000, () => {
+        this.createVictoryButtons(centerX, centerY, [], true);
+      });
+
+      // Enviar gameOver en caso de derrota
       if (window.FarcadeSDK?.singlePlayer?.actions?.gameOver) {
         window.FarcadeSDK.singlePlayer.actions.gameOver({
           score: this.totalScore,
@@ -5444,33 +5918,38 @@ export class BattleScene extends Phaser.Scene {
     const buttonSpacing = 20;
     const buttonY = centerY + 50;
 
-    // Botón "Next Battle" (solo si no es victoria completa)
+    // Calcular si es la batalla final (todos los rivales normales derrotados)
+    const totalNormalRivals = TEAMS.length - 2; // Excluir jugador y Dark Boss
+    const isFinalBattle = updatedDefeatedRivals.length >= totalNormalRivals;
+    const buttonText = isFinalBattle ? "FINAL BATTLE" : "NEXT BATTLE";
+
+    // Botón "Next Battle" o "Final Battle" (solo si no es victoria completa)
     if (!isCompleteVictory) {
       const nextButton = this.add.container(centerX, buttonY);
       nextButton.setDepth(2002);
 
       const nextBg = this.add.graphics();
-      nextBg.fillStyle(0x03eae9, 1);
+      nextBg.fillStyle(0x203a6a, 0.85);
       nextBg.fillRoundedRect(
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        8
+        14
       );
-      nextBg.lineStyle(4, 0xffffff, 1);
+      nextBg.lineStyle(3, 0x03eae9, 1);
       nextBg.strokeRoundedRect(
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        8
+        14
       );
 
       const nextText = this.add
-        .text(0, 0, "NEXT BATTLE", {
+        .text(0, 0, buttonText, {
           fontSize: "28px",
-          color: "#000000",
+          color: "#ffffff",
           fontFamily: "Orbitron",
           fontStyle: "bold",
         })
@@ -5490,44 +5969,44 @@ export class BattleScene extends Phaser.Scene {
       // Hover effect
       nextButton.on("pointerover", () => {
         nextBg.clear();
-        nextBg.fillStyle(0xffffff, 1);
+        nextBg.fillStyle(0x03eae9, 0.3);
         nextBg.fillRoundedRect(
           -buttonWidth / 2,
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          8
+          14
         );
-        nextBg.lineStyle(4, 0x03eae9, 1);
+        nextBg.lineStyle(3, 0x03eae9, 1);
         nextBg.strokeRoundedRect(
           -buttonWidth / 2,
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          8
+          14
         );
-        nextText.setColor("#03eae9");
+        nextText.setColor("#ffffff");
       });
 
       nextButton.on("pointerout", () => {
         nextBg.clear();
-        nextBg.fillStyle(0x03eae9, 1);
+        nextBg.fillStyle(0x203a6a, 0.85);
         nextBg.fillRoundedRect(
           -buttonWidth / 2,
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          8
+          14
         );
-        nextBg.lineStyle(4, 0xffffff, 1);
+        nextBg.lineStyle(3, 0x03eae9, 1);
         nextBg.strokeRoundedRect(
           -buttonWidth / 2,
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          8
+          14
         );
-        nextText.setColor("#000000");
+        nextText.setColor("#ffffff");
       });
 
       nextButton.on("pointerdown", () => {
@@ -5543,21 +6022,21 @@ export class BattleScene extends Phaser.Scene {
     quitButton.setDepth(2002);
 
     const quitBg = this.add.graphics();
-    quitBg.fillStyle(0x203a6a, 1);
+    quitBg.fillStyle(0x203a6a, 0.85);
     quitBg.fillRoundedRect(
       -buttonWidth / 2,
       -buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      8
+      14
     );
-    quitBg.lineStyle(4, 0xffffff, 1);
+    quitBg.lineStyle(3, 0x03eae9, 1);
     quitBg.strokeRoundedRect(
       -buttonWidth / 2,
       -buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      8
+      14
     );
 
     const quitText = this.add
@@ -5583,42 +6062,42 @@ export class BattleScene extends Phaser.Scene {
     // Hover effect
     quitButton.on("pointerover", () => {
       quitBg.clear();
-      quitBg.fillStyle(0xffffff, 1);
+      quitBg.fillStyle(0x03eae9, 0.3);
       quitBg.fillRoundedRect(
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        8
+        14
       );
-      quitBg.lineStyle(4, 0x203a6a, 1);
+      quitBg.lineStyle(3, 0x03eae9, 1);
       quitBg.strokeRoundedRect(
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        8
+        14
       );
-      quitText.setColor("#203a6a");
+      quitText.setColor("#ffffff");
     });
 
     quitButton.on("pointerout", () => {
       quitBg.clear();
-      quitBg.fillStyle(0x203a6a, 1);
+      quitBg.fillStyle(0x203a6a, 0.85);
       quitBg.fillRoundedRect(
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        8
+        14
       );
-      quitBg.lineStyle(4, 0xffffff, 1);
+      quitBg.lineStyle(3, 0x03eae9, 1);
       quitBg.strokeRoundedRect(
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        8
+        14
       );
       quitText.setColor("#ffffff");
     });

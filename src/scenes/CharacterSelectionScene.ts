@@ -14,12 +14,17 @@ export class CharacterSelectionScene extends Phaser.Scene {
   preload() {}
 
   create() {
-    const width = 720;
-    const height = 1080;
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
-    // Fondo con imagen
-    const bg = this.add.image(360, 540, "selection-bg");
-    bg.setDisplaySize(width, height);
+    // Fondo con imagen - ajustar para cubrir toda la pantalla
+    const bg = this.add.image(centerX, centerY, "selection-bg");
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const bgScale = Math.max(scaleX, scaleY);
+    bg.setScale(bgScale);
     bg.setDepth(0);
 
     // Mapeo de imágenes
@@ -37,8 +42,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
     // Imagen del equipo (detrás de la pokédex)
     // Posición fija relativa al centro de la pantalla
     this.teamImage = this.add.image(
-      360,
-      480,
+      centerX,
+      centerY - 60,
       charImages[TEAMS[this.currentIndex].id]
     );
     this.teamImage.setDepth(1);
@@ -53,12 +58,12 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const maskShape = this.add.graphics();
     maskShape.fillStyle(0xffffff);
     // Área rectangular donde se muestra la imagen (zona de la pantalla de la pokédex)
-    maskShape.fillRect(110, 190, 500, 600);
+    maskShape.fillRect(centerX - 250, centerY - 350, 500, 600);
     this.imageMask = maskShape.createGeometryMask();
     this.teamImage.setMask(this.imageMask);
 
     // Pokédex encima de la imagen
-    const pokedex = this.add.image(360, 540, "pokedex");
+    const pokedex = this.add.image(centerX, centerY, "pokedex");
     pokedex.setDepth(10);
     // Escalar pokédex para que ocupe casi toda la pantalla
     const pokedexScale = Math.min(
@@ -68,13 +73,30 @@ export class CharacterSelectionScene extends Phaser.Scene {
     pokedex.setScale(pokedexScale);
 
     // Luz de encendido (arriba izquierda con glow) - Cyan
-    const powerLight = this.add.circle(170, 170, 45, 0x03ebe9);
+    const powerLight = this.add.circle(
+      centerX - 190,
+      centerY - 370,
+      45,
+      0x03ebe9
+    );
     powerLight.setDepth(25);
 
     // Glow de la luz de encendido
-    const glowLight1 = this.add.circle(170, 170, 54, 0x03ebe9, 0.4);
+    const glowLight1 = this.add.circle(
+      centerX - 190,
+      centerY - 370,
+      54,
+      0x03ebe9,
+      0.4
+    );
     glowLight1.setDepth(24);
-    const glowLight2 = this.add.circle(170, 170, 63, 0x03ebe9, 0.2);
+    const glowLight2 = this.add.circle(
+      centerX - 190,
+      centerY - 370,
+      63,
+      0x03ebe9,
+      0.2
+    );
     glowLight2.setDepth(23);
 
     // Animación pulsante de la luz
@@ -308,7 +330,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
   }
 
   nextTeam(charImages: { [key: string]: string }) {
-    if (this.currentIndex < TEAMS.length - 1) {
+    const maxIndex = TEAMS.length - 2; // Excluir Dark Champion (último equipo)
+    if (this.currentIndex < maxIndex) {
       this.currentIndex++;
     } else {
       this.currentIndex = 0; // Volver al inicio
@@ -318,10 +341,11 @@ export class CharacterSelectionScene extends Phaser.Scene {
   }
 
   previousTeam(charImages: { [key: string]: string }) {
+    const maxIndex = TEAMS.length - 2; // Excluir Dark Champion (último equipo)
     if (this.currentIndex > 0) {
       this.currentIndex--;
     } else {
-      this.currentIndex = TEAMS.length - 1; // Ir al final
+      this.currentIndex = maxIndex; // Ir al penúltimo (excluir Dark Champion)
     }
     this.sound.play("sfx-pokedex", { volume: 0.5 });
     this.updateTeamImage(charImages, -1); // -1 = dirección izquierda

@@ -256,6 +256,29 @@ const CRYOWIND: Monster = {
   },
 };
 
+const DARKBULL: Monster = {
+  name: "Dark Bull",
+  color: "#8B0000", // Rojo oscuro sangre (Dark/Fighting type)
+  sprites: {
+    adultFront: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/3.png",
+    adultBack: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/3.png", // Usar mismo sprite por ahora
+    babyFront: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/2.png",
+    babyBack: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/2.png", // Usar mismo sprite por ahora
+    pathdrop:
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
+    specialAbility: {
+      url: "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/dark-mage-XEKtuMePSXjKPu6CWA37v5Rkyey8rf.webp?kFAy",
+      frames: 10,
+      rows: 1,
+      cols: 10,
+      totalWidth: 1920,
+      totalHeight: 128,
+      frameWidth: 192,
+      frameHeight: 128,
+    },
+  },
+};
+
 // Definición de trainers
 const REMIX_TRAINER: Trainer = {
   name: "Remix",
@@ -320,6 +343,13 @@ const YIELDGUILD_TRAINER: Trainer = {
   monster: CRYOWIND,
 };
 
+const DARKCHAMPION_TRAINER: Trainer = {
+  name: "DarkChampion",
+  displayName: "Dark Champion",
+  sprite: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/1.png",
+  monster: DARKBULL,
+};
+
 // Definición de equipos
 export const TEAMS: Team[] = [
   {
@@ -362,7 +392,11 @@ export const TEAMS: Team[] = [
     name: "Team Remix",
     trainer: REMIX_TRAINER,
   },
-  // Aquí se añadirán más equipos...
+  {
+    id: "team-darkchampion",
+    name: "Dark Champion",
+    trainer: DARKCHAMPION_TRAINER,
+  },
 ];
 
 // Funciones helper para acceder a los datos

@@ -7,7 +7,7 @@ export class MainMenuScene extends Phaser.Scene {
     // Cargar imagen de fondo
     this.load.image(
       "menu-bg",
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/bg+(1).webp"
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/Dise%C3%B1o+sin+t%C3%ADtulo+(98).png"
     );
 
     // Cargar audios
@@ -63,16 +63,32 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   createContent() {
-    const width = 720;
-    const height = 1080;
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
-    // Fondo
-    const bg = this.add.image(360, 540, "menu-bg");
-    bg.setDisplaySize(width, height);
+    // Fondo - ajustar para cubrir toda la pantalla
+    const bg = this.add.image(centerX, centerY, "menu-bg");
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale);
     bg.setDepth(0);
 
+    // Overlay oscuro suave
+    const overlay = this.add.rectangle(
+      centerX,
+      centerY,
+      width,
+      height,
+      0x000000,
+      0.25
+    );
+    overlay.setDepth(1);
+
     // Título "G3 ARENA" (tamaño aumentado)
-    const title = this.add.text(360, 350, "G3 ARENA", {
+    const title = this.add.text(centerX, centerY - 190, "G3 ARENA", {
       fontSize: "100px", // aumentado desde 80px
       color: "#03EAE9",
       fontFamily: "Orbitron",
@@ -91,7 +107,7 @@ export class MainMenuScene extends Phaser.Scene {
     title.setDepth(10);
 
     // Contenedor del botón START
-    const buttonY = 650;
+    const buttonY = centerY + 110;
     const buttonWidth = 300;
     const buttonHeight = 80;
 
@@ -99,7 +115,7 @@ export class MainMenuScene extends Phaser.Scene {
     const buttonBg = this.add.graphics();
     buttonBg.fillStyle(0x1a1a1a, 0.4);
     buttonBg.fillRoundedRect(
-      360 - buttonWidth / 2,
+      centerX - buttonWidth / 2,
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
@@ -111,7 +127,7 @@ export class MainMenuScene extends Phaser.Scene {
     const buttonBorder = this.add.graphics();
     buttonBorder.lineStyle(4, 0x03eae9, 1);
     buttonBorder.strokeRoundedRect(
-      360 - buttonWidth / 2,
+      centerX - buttonWidth / 2,
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
@@ -120,7 +136,7 @@ export class MainMenuScene extends Phaser.Scene {
     buttonBorder.setDepth(6);
 
     // Texto del botón
-    const buttonText = this.add.text(360, buttonY, "START", {
+    const buttonText = this.add.text(centerX, buttonY, "START", {
       fontSize: "42px",
       color: "#ffffff",
       fontFamily: "Orbitron",
@@ -139,7 +155,12 @@ export class MainMenuScene extends Phaser.Scene {
     buttonText.setDepth(7);
 
     // Zona interactiva del botón con cursor pointer
-    const buttonZone = this.add.zone(360, buttonY, buttonWidth, buttonHeight);
+    const buttonZone = this.add.zone(
+      centerX,
+      buttonY,
+      buttonWidth,
+      buttonHeight
+    );
     buttonZone.setInteractive({ useHandCursor: true });
     buttonZone.setDepth(7);
 
@@ -150,19 +171,24 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     // Subtítulo (más grande, blanco puro, sin borde, con sombra como el título)
-    const subtitle = this.add.text(360, 450, "There can be only one", {
-      fontSize: "32px", // aumentado desde 24px
-      color: "#FFFFFF", // blanco puro
-      fontFamily: "Orbitron",
-      fontStyle: "bold",
-      shadow: {
-        offsetX: 5,
-        offsetY: 5,
-        color: "#000000",
-        blur: 10,
-        fill: true,
-      },
-    });
+    const subtitle = this.add.text(
+      centerX,
+      centerY - 90,
+      "There can be only one",
+      {
+        fontSize: "32px", // aumentado desde 24px
+        color: "#FFFFFF", // blanco puro
+        fontFamily: "Orbitron",
+        fontStyle: "bold",
+        shadow: {
+          offsetX: 5,
+          offsetY: 5,
+          color: "#000000",
+          blur: 10,
+          fill: true,
+        },
+      }
+    );
     subtitle.setOrigin(0.5, 0.5);
     subtitle.setDepth(10);
 

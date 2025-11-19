@@ -16,7 +16,7 @@ document.fonts.ready.then(() => {
     width: GameSettings.canvas.width,
     height: GameSettings.canvas.height,
     scale: {
-      mode: Phaser.Scale.FIT,
+      mode: Phaser.Scale.ENVELOP,
       autoCenter: Phaser.Scale.CENTER_BOTH,
       parent: document.body,
       width: GameSettings.canvas.width,
