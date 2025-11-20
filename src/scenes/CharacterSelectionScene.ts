@@ -49,8 +49,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
     this.teamImage.setDepth(1);
     // Escalar para que encaje en la pantalla de la pokédex
     const imageScale = Math.min(
-      (720 * 0.55) / this.teamImage.width,
-      (1080 * 0.45) / this.teamImage.height
+      (720 * 0.65) / this.teamImage.width,
+      (1080 * 0.55) / this.teamImage.height
     );
     this.teamImage.setScale(imageScale);
 
@@ -374,8 +374,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
     );
     newImage.setDepth(1);
     const imageScale = Math.min(
-      (720 * 0.55) / newImage.width,
-      (1080 * 0.45) / newImage.height
+      (720 * 0.65) / newImage.width,
+      (1080 * 0.55) / newImage.height
     );
     newImage.setScale(imageScale);
 

@@ -7,7 +7,7 @@ export class MainMenuScene extends Phaser.Scene {
     // Cargar imagen de fondo
     this.load.image(
       "menu-bg",
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/Dise%C3%B1o+sin+t%C3%ADtulo+(98).png"
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/main-menu-scene.png"
     );
 
     // Cargar audios

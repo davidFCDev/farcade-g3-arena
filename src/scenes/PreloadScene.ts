@@ -67,11 +67,11 @@ export class PreloadScene extends Phaser.Scene {
     // --- FONDOS PRINCIPALES ---
     this.load.image(
       "selection-bg",
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/bg+(1).webp"
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/select-menu-scene.png"
     );
     this.load.image(
       "rival-bg",
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/bg+(1).webp"
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/select-menu-scene.png"
     );
 
     // Mapas de batalla aleatorios (3 opciones)
