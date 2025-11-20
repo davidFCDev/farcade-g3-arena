@@ -63,12 +63,12 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   createContent() {
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
 
-    // Fondo - ajustar para cubrir toda la pantalla
+    // Fondo - ajustar para cubrir toda la pantalla manteniendo proporción
     const bg = this.add.image(centerX, centerY, "menu-bg");
     const scaleX = width / bg.width;
     const scaleY = height / bg.height;
@@ -88,7 +88,7 @@ export class MainMenuScene extends Phaser.Scene {
     overlay.setDepth(1);
 
     // Título "G3 ARENA" (tamaño aumentado)
-    const title = this.add.text(centerX, centerY - 190, "G3 ARENA", {
+    const title = this.add.text(360, 350, "G3 ARENA", {
       fontSize: "100px", // aumentado desde 80px
       color: "#03EAE9",
       fontFamily: "Orbitron",
@@ -107,7 +107,7 @@ export class MainMenuScene extends Phaser.Scene {
     title.setDepth(10);
 
     // Contenedor del botón START
-    const buttonY = centerY + 110;
+    const buttonY = 650;
     const buttonWidth = 300;
     const buttonHeight = 80;
 
@@ -115,7 +115,7 @@ export class MainMenuScene extends Phaser.Scene {
     const buttonBg = this.add.graphics();
     buttonBg.fillStyle(0x1a1a1a, 0.4);
     buttonBg.fillRoundedRect(
-      centerX - buttonWidth / 2,
+      360 - buttonWidth / 2,
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
@@ -127,7 +127,7 @@ export class MainMenuScene extends Phaser.Scene {
     const buttonBorder = this.add.graphics();
     buttonBorder.lineStyle(4, 0x03eae9, 1);
     buttonBorder.strokeRoundedRect(
-      centerX - buttonWidth / 2,
+      360 - buttonWidth / 2,
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
@@ -136,7 +136,7 @@ export class MainMenuScene extends Phaser.Scene {
     buttonBorder.setDepth(6);
 
     // Texto del botón
-    const buttonText = this.add.text(centerX, buttonY, "START", {
+    const buttonText = this.add.text(360, buttonY, "START", {
       fontSize: "42px",
       color: "#ffffff",
       fontFamily: "Orbitron",
@@ -170,25 +170,44 @@ export class MainMenuScene extends Phaser.Scene {
       this.startGame();
     });
 
+    // Botón "How to Play" - texto pequeño y clickable
+    const howToPlayText = this.add.text(360, buttonY + 80, "> How to Play <", {
+      fontSize: "26px",
+      color: "#E0E0E0",
+      fontFamily: "Orbitron",
+      fontStyle: "normal",
+    });
+    howToPlayText.setOrigin(0.5, 0.5);
+    howToPlayText.setDepth(10);
+    howToPlayText.setInteractive({ useHandCursor: true });
+
+    // Efecto hover
+    howToPlayText.on("pointerover", () => {
+      howToPlayText.setStyle({ color: "#FFFFFF" });
+    });
+    howToPlayText.on("pointerout", () => {
+      howToPlayText.setStyle({ color: "#03EAE9" });
+    });
+
+    // Click para mostrar modal
+    howToPlayText.on("pointerdown", () => {
+      this.showHowToPlayModal();
+    });
+
     // Subtítulo (más grande, blanco puro, sin borde, con sombra como el título)
-    const subtitle = this.add.text(
-      centerX,
-      centerY - 90,
-      "There can be only one",
-      {
-        fontSize: "32px", // aumentado desde 24px
-        color: "#FFFFFF", // blanco puro
-        fontFamily: "Orbitron",
-        fontStyle: "bold",
-        shadow: {
-          offsetX: 5,
-          offsetY: 5,
-          color: "#000000",
-          blur: 10,
-          fill: true,
-        },
-      }
-    );
+    const subtitle = this.add.text(360, 450, "There can be only one", {
+      fontSize: "32px", // aumentado desde 24px
+      color: "#FFFFFF", // blanco puro
+      fontFamily: "Orbitron",
+      fontStyle: "bold",
+      shadow: {
+        offsetX: 5,
+        offsetY: 5,
+        color: "#000000",
+        blur: 10,
+        fill: true,
+      },
+    });
     subtitle.setOrigin(0.5, 0.5);
     subtitle.setDepth(10);
 
@@ -201,6 +220,124 @@ export class MainMenuScene extends Phaser.Scene {
       repeat: -1,
       ease: "Sine.easeInOut",
     });
+  }
+
+  showHowToPlayModal() {
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
+
+    // Overlay oscuro de fondo
+    const modalOverlay = this.add.rectangle(
+      centerX,
+      centerY,
+      width,
+      height,
+      0x000000,
+      0.85
+    );
+    modalOverlay.setDepth(1000);
+    modalOverlay.setInteractive();
+
+    // Panel del modal (estilo similar al score)
+    const panelWidth = 600;
+    const panelHeight = 700;
+
+    // Fondo del panel
+    const panelBg = this.add.graphics();
+    panelBg.fillStyle(0x0a0a1a, 0.95);
+    panelBg.fillRoundedRect(
+      centerX - panelWidth / 2,
+      centerY - panelHeight / 2,
+      panelWidth,
+      panelHeight,
+      20
+    );
+    panelBg.setDepth(1001);
+
+    // Borde del panel
+    const panelBorder = this.add.graphics();
+    panelBorder.lineStyle(4, 0x03eae9, 1);
+    panelBorder.strokeRoundedRect(
+      centerX - panelWidth / 2,
+      centerY - panelHeight / 2,
+      panelWidth,
+      panelHeight,
+      20
+    );
+    panelBorder.setDepth(1002);
+
+    // Título del modal
+    const modalTitle = this.add.text(centerX, centerY - 280, "HOW TO PLAY", {
+      fontSize: "48px",
+      color: "#03EAE9",
+      fontFamily: "Orbitron",
+      fontStyle: "bold",
+      stroke: "#000000",
+      strokeThickness: 6,
+    });
+    modalTitle.setOrigin(0.5, 0.5);
+    modalTitle.setDepth(1003);
+
+    // Instrucciones
+    const instructions = [
+      "1. Choose your favorite team",
+      "2. Battle rivals with strategic abilities",
+      "3. Evolve your monster to unlock power",
+      "4. Defeat all rivals to advance",
+      "5. Face the Dark Champion in the final battle",
+    ];
+
+    let yOffset = centerY - 180;
+    const instructionTexts: Phaser.GameObjects.Text[] = [];
+
+    instructions.forEach((instruction, index) => {
+      const text = this.add.text(centerX - 250, yOffset, instruction, {
+        fontSize: "22px",
+        color: "#FFFFFF",
+        fontFamily: "Orbitron",
+        fontStyle: "normal",
+        lineSpacing: 10,
+        wordWrap: { width: 500 },
+      });
+      text.setDepth(1003);
+      instructionTexts.push(text);
+      yOffset += 90;
+    });
+
+    // Botón cerrar
+    const closeButtonY = centerY + 260;
+    const closeText = this.add.text(centerX, closeButtonY, "CLOSE", {
+      fontSize: "28px",
+      color: "#03EAE9",
+      fontFamily: "Orbitron",
+      fontStyle: "bold",
+    });
+    closeText.setOrigin(0.5, 0.5);
+    closeText.setDepth(1003);
+    closeText.setInteractive({ useHandCursor: true });
+
+    // Efecto hover en botón cerrar
+    closeText.on("pointerover", () => {
+      closeText.setStyle({ color: "#FFFFFF" });
+    });
+    closeText.on("pointerout", () => {
+      closeText.setStyle({ color: "#03EAE9" });
+    });
+
+    // Cerrar modal
+    const closeModal = () => {
+      modalOverlay.destroy();
+      panelBg.destroy();
+      panelBorder.destroy();
+      modalTitle.destroy();
+      instructionTexts.forEach((text) => text.destroy());
+      closeText.destroy();
+    };
+
+    closeText.on("pointerdown", closeModal);
+    modalOverlay.on("pointerdown", closeModal);
   }
 
   startGame() {

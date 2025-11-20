@@ -14,10 +14,10 @@ export class CharacterSelectionScene extends Phaser.Scene {
   preload() {}
 
   create() {
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
 
     // Fondo con imagen - ajustar para cubrir toda la pantalla
     const bg = this.add.image(centerX, centerY, "selection-bg");
@@ -42,15 +42,15 @@ export class CharacterSelectionScene extends Phaser.Scene {
     // Imagen del equipo (detrás de la pokédex)
     // Posición fija relativa al centro de la pantalla
     this.teamImage = this.add.image(
-      centerX,
-      centerY - 60,
+      360,
+      480,
       charImages[TEAMS[this.currentIndex].id]
     );
     this.teamImage.setDepth(1);
     // Escalar para que encaje en la pantalla de la pokédex
     const imageScale = Math.min(
-      (width * 0.55) / this.teamImage.width,
-      (height * 0.45) / this.teamImage.height
+      (720 * 0.55) / this.teamImage.width,
+      (1080 * 0.45) / this.teamImage.height
     );
     this.teamImage.setScale(imageScale);
 
@@ -58,16 +58,16 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const maskShape = this.add.graphics();
     maskShape.fillStyle(0xffffff);
     // Área rectangular donde se muestra la imagen (zona de la pantalla de la pokédex)
-    maskShape.fillRect(centerX - 250, centerY - 350, 500, 600);
+    maskShape.fillRect(110, 130, 500, 600);
     this.imageMask = maskShape.createGeometryMask();
     this.teamImage.setMask(this.imageMask);
 
     // Pokédex encima de la imagen
-    const pokedex = this.add.image(centerX, centerY, "pokedex");
+    const pokedex = this.add.image(360, 540, "pokedex");
     pokedex.setDepth(10);
     // Escalar pokédex para que ocupe casi toda la pantalla
     const pokedexScale = Math.min(
-      (width * 0.98) / pokedex.width,
+      (720 * 0.98) / pokedex.width,
       (height * 0.95) / pokedex.height
     );
     pokedex.setScale(pokedexScale);

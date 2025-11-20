@@ -34,10 +34,10 @@ export class RivalSelectionScene extends Phaser.Scene {
   preload() {}
 
   create() {
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
 
     // Limpiar arrays de la vuelta anterior
     this.cards = [];
@@ -321,10 +321,10 @@ export class RivalSelectionScene extends Phaser.Scene {
     // (Eliminada animación de celebración de escala para cumplir requisito: solo borde)
 
     // Obtener dimensiones una sola vez
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
 
     // Esperar un momento antes de mostrar el overlay
     this.time.delayedCall(800, () => {
@@ -434,10 +434,10 @@ export class RivalSelectionScene extends Phaser.Scene {
   }
 
   showDarkBossAppearance() {
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
 
     // Fondo oscuro dramático
     const bg = this.add.rectangle(0, 0, width, height, 0x0a0a0a);

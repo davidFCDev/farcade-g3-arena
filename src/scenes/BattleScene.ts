@@ -246,10 +246,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   async create() {
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const width = 720;
+    const height = 1080;
+    const centerX = 360;
+    const centerY = 540;
 
     // Usar estado precargado si está disponible, sino intentar cargarlo
     const sceneData = this.scene.settings.data as any;
@@ -340,11 +340,10 @@ export class BattleScene extends Phaser.Scene {
     // Background (usa la key seleccionada en preload)
     const bgKey = (this as any).selectedBackgroundKey || "battle-bg-1";
     this.background = this.add.image(centerX, centerY, bgKey);
-    const scale = Math.max(
-      width / this.background.width,
-      height / this.background.height
-    );
-    this.background.setScale(scale);
+    const scaleX = width / this.background.width;
+    const scaleY = height / this.background.height;
+    const bgScale = Math.max(scaleX, scaleY);
+    this.background.setScale(bgScale);
 
     // Calcular offset para monstruos voladores
     const playerFlyingOffset = this.playerTeam.trainer.monster.isFlying
@@ -996,15 +995,15 @@ export class BattleScene extends Phaser.Scene {
   }
 
   coinFlip(): void {
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
+    const centerX = 360;
+    const centerY = 540;
 
     // Overlay oscuro
     const overlay = this.add.rectangle(
       centerX,
       centerY,
-      this.cameras.main.width,
-      this.cameras.main.height,
+      720,
+      1080,
       0x000000,
       0.7
     );
