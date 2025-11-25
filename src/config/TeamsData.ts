@@ -262,8 +262,10 @@ const DARKBULL: Monster = {
   sprites: {
     adultFront: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/3.png",
     adultBack: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/3.png", // Usar mismo sprite por ahora
-    babyFront: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/2.png",
-    babyBack: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/2.png", // Usar mismo sprite por ahora
+    babyFront:
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/baby-dark.webp",
+    babyBack:
+      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/baby-dark.webp", // Usar mismo sprite por ahora
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
