@@ -43,14 +43,12 @@ const FLORAMIX: Monster = {
   name: "Floramix",
   color: "#A4DA0D", // Verde lima brillante (Plant type)
   sprites: {
-    adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/remix-adult-front.webp",
+    adultFront: "",
     adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/remix-adult-back.webp",
-    babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/remix-baby-front.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-adult-back-WJoDLv3bBS-Pg1FgbyaqvRD3v7rHuTrOMmrgTO9lc.webp?bJDx",
+    babyFront: "",
     babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/remixabritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-baby-back-qAP8aEVODU-Md6CfTLshZ4MzXfsU1pvym9XE0oCce.webp?1YnV",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -71,13 +69,11 @@ const BLAZOID: Monster = {
   color: "#FF4500", // Rojo fuego/naranja (Fire/robot type)
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/avax-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/avax-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/avax-adult-front-B0SGInpNMA-uu8sfswTzu3xkQkS56eyrzBWoZGGG1.webp?7ZpL",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/avax-baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/avaxabritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/avax-baby-front-JVzpC2c49E-QOJn17OgnKdfuB5VzJflmuxOVX6dBh.webp?WgEG",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -98,13 +94,11 @@ const ARBITRON: Monster = {
   color: "#B0C4DE", // Azul acero claro (Steel type)
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/arbitrum-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/arbitrum-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/arbitrum-adult-front-Tam80AjM63-LTM55CMVGGcX4lEMU1SyD3Ijgk1hK2.webp?tFdx",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/arbitrum-baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/abritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/arbitrum-baby-front-AdOm4M8IRy-eZ14dOcJVitWuZJnQBeR0RGejaL9gt.webp?3KHC",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -125,13 +119,11 @@ const SPARKID: Monster = {
   color: "#FFD700", // Amarillo eléctrico dorado (Electric type)
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/g3-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/g3-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/g3-adult-front-BIme9PRpwy-oUGeULadMBJdYZhJF2qe7QhXpLCFyd.webp?aBUl",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/g3-baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/g3abritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/g3-baby-front-Lj6Nuf1LGD-qynSaTfwueLjoKLZdlbgHYIYagai5g.webp?Ggmw",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -152,13 +144,11 @@ const SEABYT: Monster = {
   color: "#00CED1", // Cian agua (Aqua type)
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/opensea-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/opensea-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/opensea-adult-front-klY6dFEQA6-IHIGzH7m4icJa2YYkD8Fdm7tBI8AKO.webp?ecye",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/opensea-baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/openseaabritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/opensea-baby-front-QPn7v4ty0Q-8EiM6dUb42Tdk6wVFCITytwuvVDvMB.webp?FDnA",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -179,13 +169,11 @@ const SOLATOX: Monster = {
   color: "#9333EA", // Púrpura venenoso (Poison type)
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/solana-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/solana-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/solana-adult-front-AOyuWE5rqk-P26IhDqXMfpVcp13NYiYo3nhOTpNbT.webp?gYBn",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/solana-baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/solanaabritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/solana-baby-front-3JI05XJGhR-Y1UIuBciZOYfttmoDBaQoN6C0u4Vzj.webp?vIF6",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -206,13 +194,11 @@ const NOCTYRA: Monster = {
   color: "#1F1F1F", // Negro oscuro (Dark type)
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/wolve-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/wolves-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/wolves-adult-front-iNLEeyF6Qi-wD3CDS63LzLHkDDOcly6iC5PyCfNct.webp?dEKa",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/wolves--baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/wolves-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/wolves-baby-front-ITL6PPdio5-TWuaEROnxJGzkjovffI0QIph06GrCg.webp?XPkx",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -234,13 +220,11 @@ const CRYOWIND: Monster = {
   isFlying: true, // Este monstruo vuela
   sprites: {
     adultFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/yield-adult-front.webp",
-    adultBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/yield-adult-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/yield-adult-front-f4n03Fu77D-mFbfmLPLDX6GGshQZsrIAqZAol4U5N.webp?ia98",
+    adultBack: "",
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/yield-baby-front.webp",
-    babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/yieldabritrum-baby-back.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/yield-baby-front-k5xxO5ciVO-lNCKWsEY3w1RLTbPlZLWTyScUNCThM.webp?23uJ",
+    babyBack: "",
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -260,12 +244,14 @@ const DARKBULL: Monster = {
   name: "Dark Bull",
   color: "#8B0000", // Rojo oscuro sangre (Dark/Fighting type)
   sprites: {
-    adultFront: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/3.png",
-    adultBack: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/3.png", // Usar mismo sprite por ahora
+    adultFront:
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/adult-dark-front-3k5kFfdL2U-mUOUsi34z6gVNxh0LxnpqJk7YkHdC7.webp?oBGj",
+    adultBack:
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/adult-dark-front-3k5kFfdL2U-mUOUsi34z6gVNxh0LxnpqJk7YkHdC7.webp?oBGj", // Usar mismo sprite por ahora
     babyFront:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/baby-dark.webp",
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/baby-dark-front-HAeNsGn8gd-CpBI50hNonSjP3mskDcsV4rPizhmMQ.webp?ikPM",
     babyBack:
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/baby-dark.webp", // Usar mismo sprite por ahora
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/baby-dark-front-HAeNsGn8gd-CpBI50hNonSjP3mskDcsV4rPizhmMQ.webp?ikPM", // Usar mismo sprite por ahora
     pathdrop:
       "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-pathdrop-TrOfBKXKanWbjRdoGot3LFHiOZQdlw.webp?SAX2",
     specialAbility: {
@@ -286,7 +272,7 @@ const REMIX_TRAINER: Trainer = {
   name: "Remix",
   displayName: "@Remix",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/remix-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/remix-trainer-GkCgaZdD7l-5VX7pp6Yvc8mnEzClzqPgZ1PShRKUM.webp?1u3R",
   monster: FLORAMIX,
 };
 
@@ -294,7 +280,7 @@ const AVAX_TRAINER: Trainer = {
   name: "Avax",
   displayName: "@Avax",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/avax-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/avax-trainer-bUGUicX3Ex-WX4HUSCSeuO5qTXwdtulniytACv7Cg.webp?xads",
   monster: BLAZOID,
 };
 
@@ -302,14 +288,15 @@ const ARBITRUM_TRAINER: Trainer = {
   name: "Arbitrum",
   displayName: "@Arbitrum",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/arbitrum-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/arbitrum-trainer-TKA8BfPVaO-J2ya8sb6V060aqW3rYkqEzzK8e6SxC.webp?NHpJ",
   monster: ARBITRON,
 };
 
 const G3_TRAINER: Trainer = {
   name: "G3",
   displayName: "@G3",
-  sprite: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/g3-trainer.webp",
+  sprite:
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/g3-trainer-yJXYN9l02C-GPfLTptEvEmR9WX8ZuNpZOlXLirmQb.webp?Webk",
   monster: SPARKID,
 };
 
@@ -317,7 +304,7 @@ const OPENSEA_TRAINER: Trainer = {
   name: "Opensea",
   displayName: "@Opensea",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/opensea-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/opensea-trainer-BRHYGXiACM-6BwgCekiNRAa3Y0m60ClmrlSsHoUjw.webp?JCpn",
   monster: SEABYT,
 };
 
@@ -325,7 +312,7 @@ const SOLANA_TRAINER: Trainer = {
   name: "Solana",
   displayName: "@Solana",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/solana-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/solana-trainer-XrTOfOFO11-s0tFfLPBTHuRnHfJGv0iwPVxZXWlZ2.webp?P1X9",
   monster: SOLATOX,
 };
 
@@ -333,7 +320,7 @@ const WOLVES_TRAINER: Trainer = {
   name: "Wolves",
   displayName: "@Wolves",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/wolves-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/wolves-trainer-6eTZ6Eh2S6-Ry78yjOfBHw0dzLKfvKy8S138PH7AE.webp?I68b",
   monster: NOCTYRA,
 };
 
@@ -341,14 +328,15 @@ const YIELDGUILD_TRAINER: Trainer = {
   name: "YieldGuild",
   displayName: "@YieldGuild",
   sprite:
-    "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/yield-trainer.webp",
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/yield-trainer-zg0cbPkE6g-7dCXfcmuioDTSqOOO259IiY04XNJ5b.webp?rqdQ",
   monster: CRYOWIND,
 };
 
 const DARKCHAMPION_TRAINER: Trainer = {
   name: "DarkChampion",
   displayName: "Dark Champion",
-  sprite: "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/1.png",
+  sprite:
+    "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/1-2SVbqTH6Dm-EWpcSPtCXv7qeio6Wjo2Lobq90fP9H.webp?xtE4",
   monster: DARKBULL,
 };
 

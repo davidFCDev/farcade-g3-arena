@@ -63,24 +63,28 @@ export class BattleScene extends Phaser.Scene {
   private evolutionInnerWidth!: number;
   private evolutionInnerHeight!: number;
 
-  // Posiciones FIJAS de los adultos (centro del sprite con origin 0.5, 0.5)
+  // Offset vertical para fullscreen (pantallas más altas que 2:3)
+  // Se calcula en create(): (height - 1080) / 2 cuando height > 1080, 0 en 2:3
+  private fieldOffsetY: number = 0;
+
+  // Posiciones de los adultos (base para 2:3, se les suma fieldOffsetY)
   private readonly PLAYER_ADULT_X = 170;
-  private readonly PLAYER_ADULT_Y = 540; // Posición fija del adulto (un poco más arriba)
+  private PLAYER_ADULT_Y = 590;
   private readonly PLAYER_ADULT_SCALE = 0.75;
 
-  private readonly ENEMY_ADULT_X = 535; // Movido a la izquierda (antes 550)
-  private readonly ENEMY_ADULT_Y = 255; // Movido abajo (antes 240)
-  private readonly ENEMY_ADULT_SCALE = 0.62; // Un poco más grande
+  private readonly ENEMY_ADULT_X = 535;
+  private ENEMY_ADULT_Y = 210;
+  private readonly ENEMY_ADULT_SCALE = 0.62;
 
   // Escalas de baby (más pequeños)
   private readonly PLAYER_BABY_SCALE = 0.55;
   private readonly ENEMY_BABY_SCALE = 0.4;
 
-  // Posiciones de baby (un poco más abajo que el adulto)
+  // Posiciones de baby (base para 2:3, se les suma fieldOffsetY)
   private readonly PLAYER_BABY_X = 170;
-  private readonly PLAYER_BABY_Y = 580; // Más abajo que el adulto
-  private readonly ENEMY_BABY_X = 535; // Movido a la izquierda (antes 550)
-  private readonly ENEMY_BABY_Y = 310; // Movido abajo (antes 295)
+  private PLAYER_BABY_Y = 630;
+  private readonly ENEMY_BABY_X = 535;
+  private ENEMY_BABY_Y = 265;
 
   // Datos de progresión entre batallas
   private selectedTeamIndex: number = 0;
@@ -155,7 +159,7 @@ export class BattleScene extends Phaser.Scene {
       this.enemyTeam = data.rivalTeam;
     } else {
       const availableEnemies = TEAMS.filter(
-        (team) => team.id !== this.playerTeam.id
+        (team) => team.id !== this.playerTeam.id,
       );
       this.enemyTeam =
         availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
@@ -202,7 +206,7 @@ export class BattleScene extends Phaser.Scene {
     // Si no hay rival seleccionado, elegir uno aleatorio diferente al jugador
     if (!this.enemyTeam) {
       const availableEnemies = TEAMS.filter(
-        (team) => team.id !== this.playerTeam.id
+        (team) => team.id !== this.playerTeam.id,
       );
       this.enemyTeam =
         availableEnemies[Math.floor(Math.random() * availableEnemies.length)];
@@ -246,10 +250,9 @@ export class BattleScene extends Phaser.Scene {
   }
 
   async create() {
-    const width = 720;
-    const height = 1080;
-    const centerX = 360;
-    const centerY = 540;
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Usar estado precargado si está disponible, sino intentar cargarlo
     const sceneData = this.scene.settings.data as any;
@@ -261,8 +264,8 @@ export class BattleScene extends Phaser.Scene {
         const sdkTimeout = new Promise((_, reject) =>
           setTimeout(
             () => reject(new Error("SDK timeout después de 3 segundos")),
-            3000
-          )
+            3000,
+          ),
         );
 
         const sdkReady = window.FarcadeSDK.singlePlayer.actions.ready();
@@ -345,6 +348,16 @@ export class BattleScene extends Phaser.Scene {
     const bgScale = Math.max(scaleX, scaleY);
     this.background.setScale(bgScale);
 
+    // Offset vertical para fullscreen: desplaza personajes + badges
+    // proporcionalmente al espacio extra (0 en 2:3, positivo en pantallas más altas)
+    this.fieldOffsetY = Math.max(0, (height - 1080) / 2);
+
+    // Aplicar offset a las posiciones Y del campo de batalla
+    this.PLAYER_ADULT_Y = 590 + this.fieldOffsetY;
+    this.PLAYER_BABY_Y = 630 + this.fieldOffsetY;
+    this.ENEMY_ADULT_Y = 210 + this.fieldOffsetY;
+    this.ENEMY_BABY_Y = 265 + this.fieldOffsetY;
+
     // Calcular offset para monstruos voladores
     const playerFlyingOffset = this.playerTeam.trainer.monster.isFlying
       ? -80
@@ -356,7 +369,7 @@ export class BattleScene extends Phaser.Scene {
     this.enemyPokemon = this.add.image(
       this.ENEMY_BABY_X,
       this.ENEMY_BABY_Y + enemyFlyingOffset,
-      enemyBabyKey
+      enemyBabyKey,
     );
     this.enemyPokemon.setScale(this.ENEMY_BABY_SCALE);
 
@@ -365,7 +378,7 @@ export class BattleScene extends Phaser.Scene {
     this.playerPokemon = this.add.image(
       this.PLAYER_BABY_X,
       this.PLAYER_BABY_Y + playerFlyingOffset,
-      playerBabyKey
+      playerBabyKey,
     );
     this.playerPokemon.setScale(this.PLAYER_BABY_SCALE);
 
@@ -373,7 +386,7 @@ export class BattleScene extends Phaser.Scene {
 
     // Badge del enemigo - POSICIÓN FIJA
     const enemyBadgeX = -120;
-    const enemyBadgeY = 125; // Ajustado más arriba
+    const enemyBadgeY = 125 + this.fieldOffsetY;
     const enemyBadge = this.add.image(enemyBadgeX, enemyBadgeY, "badge");
     enemyBadge.setOrigin(0, 0.5);
     enemyBadge.setScale(1.2);
@@ -391,7 +404,7 @@ export class BattleScene extends Phaser.Scene {
           fontFamily: "Orbitron",
           fontStyle: "bold",
           align: "left",
-        }
+        },
       )
       .setOrigin(0, 0.5);
 
@@ -413,7 +426,7 @@ export class BattleScene extends Phaser.Scene {
       enemyHPBarY - 14,
       enemyHPBarWidth,
       28,
-      3
+      3,
     );
 
     // Fondo con esquinas redondeadas
@@ -424,7 +437,7 @@ export class BattleScene extends Phaser.Scene {
       enemyHPBarY - 10,
       enemyHPBarWidth - 8,
       20,
-      2
+      2,
     );
 
     // Crear graphics para las secciones de HP del enemigo
@@ -432,12 +445,12 @@ export class BattleScene extends Phaser.Scene {
     this.updateEnemyHPBar(
       this.enemyHPBarX,
       this.enemyHPBarY,
-      this.enemyHPBarWidth
+      this.enemyHPBarWidth,
     );
 
     // Badge del jugador - POSICIÓN FIJA
     const playerBadgeX = width + 120;
-    const playerBadgeY = 555; // Ajustado más abajo
+    const playerBadgeY = 555 + this.fieldOffsetY;
     const playerBadge = this.add.image(playerBadgeX, playerBadgeY, "badge");
     playerBadge.setOrigin(1, 0.5);
     playerBadge.setFlipX(true);
@@ -456,7 +469,7 @@ export class BattleScene extends Phaser.Scene {
           fontFamily: "Orbitron",
           fontStyle: "bold",
           align: "right",
-        }
+        },
       )
       .setOrigin(1, 0.5);
 
@@ -478,7 +491,7 @@ export class BattleScene extends Phaser.Scene {
       playerHPBarY - 14,
       playerHPBarWidth,
       28,
-      3
+      3,
     );
 
     // Fondo con esquinas redondeadas
@@ -489,7 +502,7 @@ export class BattleScene extends Phaser.Scene {
       playerHPBarY - 10,
       playerHPBarWidth - 8,
       20,
-      2
+      2,
     );
 
     // Crear graphics para las secciones de HP del jugador
@@ -497,7 +510,7 @@ export class BattleScene extends Phaser.Scene {
     this.updatePlayerHPBar(
       this.playerHPBarX,
       this.playerHPBarY,
-      this.playerHPBarWidth
+      this.playerHPBarWidth,
     );
 
     // Contenedor para puntos acumulados debajo del badge del jugador
@@ -515,14 +528,14 @@ export class BattleScene extends Phaser.Scene {
       scoreBoxY,
       scoreBoxWidth,
       scoreBoxHeight,
-      14
+      14,
     );
     scoreBg.strokeRoundedRect(
       scoreBoxX,
       scoreBoxY,
       scoreBoxWidth,
       scoreBoxHeight,
-      14
+      14,
     );
 
     this.scoreText = this.add
@@ -537,7 +550,7 @@ export class BattleScene extends Phaser.Scene {
           fontStyle: "bold",
           stroke: "#000000",
           strokeThickness: 4,
-        }
+        },
       )
       .setOrigin(0.5, 0.5)
       .setDepth(61);
@@ -569,12 +582,12 @@ export class BattleScene extends Phaser.Scene {
     // Trainer - Personaje del jugador pegado al bottom del trainerLayer
     const trainerBottomY = trainerLayerY + trainerLayer.displayHeight / 2;
     const trainerTextureKey = `trainer-${TEAMS.findIndex(
-      (team) => team.id === this.playerTeam.id
+      (team) => team.id === this.playerTeam.id,
     )}`;
     this.trainerImage = this.add.image(
       trainerLayer.x + trainerLayer.displayWidth / 2,
       trainerBottomY,
-      trainerTextureKey
+      trainerTextureKey,
     );
     this.trainerImage.setOrigin(0.5, 1); // Anclado al bottom
 
@@ -603,7 +616,7 @@ export class BattleScene extends Phaser.Scene {
           blur: 8,
           fill: true,
         },
-      }
+      },
     );
     playerNameText.setOrigin(0.5, 1); // Anclado al bottom del texto
     playerNameText.setDepth(10); // Z-index superior
@@ -632,7 +645,7 @@ export class BattleScene extends Phaser.Scene {
       this.evolutionBarY - this.evolutionBarHeight / 2,
       this.evolutionBarWidth,
       this.evolutionBarHeight,
-      this.evolutionBarBorderRadius
+      this.evolutionBarBorderRadius,
     );
     borderGraphics.setDepth(2);
 
@@ -644,7 +657,7 @@ export class BattleScene extends Phaser.Scene {
       this.evolutionBarY - this.evolutionInnerHeight / 2,
       this.evolutionInnerWidth,
       this.evolutionInnerHeight,
-      this.evolutionBarBorderRadius - 2
+      this.evolutionBarBorderRadius - 2,
     );
     bgGraphics.setDepth(1);
 
@@ -662,7 +675,7 @@ export class BattleScene extends Phaser.Scene {
       0,
       0,
       0,
-      this.evolutionInnerHeight
+      this.evolutionInnerHeight,
     );
     // Gradiente que se repite perfectamente: violeta, azul oscuro, azul claro
     gradient.addColorStop(0, "#9D4EDD"); // Violeta
@@ -681,7 +694,7 @@ export class BattleScene extends Phaser.Scene {
     const gradientTexture = this.textures.createCanvas(
       "evolutionGradient",
       this.evolutionInnerWidth,
-      this.evolutionInnerHeight
+      this.evolutionInnerHeight,
     );
     gradientTexture!.context.drawImage(canvas, 0, 0);
     gradientTexture!.refresh();
@@ -692,7 +705,7 @@ export class BattleScene extends Phaser.Scene {
       this.evolutionBarY,
       this.evolutionInnerWidth,
       this.evolutionInnerHeight,
-      "evolutionGradient"
+      "evolutionGradient",
     ) as any; // Cast para compatibilidad con la propiedad
     this.evolutionFillSprite.setDepth(2);
     this.evolutionFillSprite.setVisible(false);
@@ -705,7 +718,7 @@ export class BattleScene extends Phaser.Scene {
       this.evolutionBarY - this.evolutionInnerHeight / 2,
       this.evolutionInnerWidth,
       this.evolutionInnerHeight,
-      this.evolutionBarBorderRadius - 2
+      this.evolutionBarBorderRadius - 2,
     );
     const mask = maskGraphics.createGeometryMask();
     this.evolutionFillSprite.setMask(mask);
@@ -755,7 +768,7 @@ export class BattleScene extends Phaser.Scene {
         glowCenterY - this.evolutionBarHeight / 2 - layer.offset,
         this.evolutionBarWidth + layer.offset * 2,
         this.evolutionBarHeight + layer.offset * 2,
-        this.evolutionBarBorderRadius + layer.offset
+        this.evolutionBarBorderRadius + layer.offset,
       );
     });
 
@@ -785,7 +798,7 @@ export class BattleScene extends Phaser.Scene {
     const chatZone = this.add.image(
       chatAreaX + rightAreaWidth / 2,
       contentStartY,
-      "chatZone"
+      "chatZone",
     );
     chatZone.setOrigin(0.5, 0);
 
@@ -808,7 +821,7 @@ export class BattleScene extends Phaser.Scene {
           fontFamily: "Orbitron",
           align: "left",
           wordWrap: { width: chatZone.displayWidth - chatPaddingLeft * 2 },
-        }
+        },
       )
       .setOrigin(0, 0); // Alineado al top-left
 
@@ -881,7 +894,7 @@ export class BattleScene extends Phaser.Scene {
             color: isSpecialDisabled ? "#cccccc" : "#ffffff",
             fontFamily: "Orbitron",
             fontStyle: "bold",
-          }
+          },
         )
         .setOrigin(0.5, 0.5);
 
@@ -943,8 +956,8 @@ export class BattleScene extends Phaser.Scene {
       // Detener todas las músicas activas
       this.sound.stopAll();
 
-      // Volver a la selección de equipo inicial (reinicio completo)
-      this.scene.start("CharacterSelectionScene");
+      // Volver a la selección de rival (reinicio completo, siempre Team Remix)
+      this.scene.start("RivalSelectionScene", { selectedTeamIndex: 7 });
     });
 
     // Toggle mute - silenciar/activar audio
@@ -959,7 +972,7 @@ export class BattleScene extends Phaser.Scene {
   // Helper para reproducir audio de forma segura (no falla si no existe)
   private safePlaySound(
     key: string,
-    config?: Phaser.Types.Sound.SoundConfig
+    config?: Phaser.Types.Sound.SoundConfig,
   ): void {
     try {
       if (this.sound.get(key) || this.cache.audio.exists(key)) {
@@ -973,7 +986,7 @@ export class BattleScene extends Phaser.Scene {
   // Helper para añadir música de forma segura
   private safeAddMusic(
     key: string,
-    config?: Phaser.Types.Sound.SoundConfig
+    config?: Phaser.Types.Sound.SoundConfig,
   ): Phaser.Sound.BaseSound | null {
     try {
       if (this.sound.get(key) || this.cache.audio.exists(key)) {
@@ -995,17 +1008,18 @@ export class BattleScene extends Phaser.Scene {
   }
 
   coinFlip(): void {
-    const centerX = 360;
-    const centerY = 540;
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Overlay oscuro
     const overlay = this.add.rectangle(
       centerX,
       centerY,
-      720,
-      1080,
+      width,
+      height,
       0x000000,
-      0.7
+      0.7,
     );
     overlay.setDepth(1000);
 
@@ -1132,7 +1146,7 @@ export class BattleScene extends Phaser.Scene {
 
                 console.log(
                   "🪙 Resultado moneda: " +
-                    (playerStarts ? "JUGADOR empieza" : "RIVAL empieza")
+                    (playerStarts ? "JUGADOR empieza" : "RIVAL empieza"),
                 );
 
                 // Crear indicadores de turno
@@ -1212,7 +1226,7 @@ export class BattleScene extends Phaser.Scene {
       this.lastRivalAction === "steal"
     ) {
       actions = actions.filter(
-        (action) => action !== "defense" && action !== "steal"
+        (action) => action !== "defense" && action !== "steal",
       );
     }
 
@@ -1265,7 +1279,7 @@ export class BattleScene extends Phaser.Scene {
     const glowSprite = this.add.image(
       this.enemyPokemon.x,
       this.enemyPokemon.y,
-      this.enemyPokemon.texture.key
+      this.enemyPokemon.texture.key,
     );
     glowSprite.setScale(this.enemyPokemon.scaleX, this.enemyPokemon.scaleY);
     glowSprite.setOrigin(this.enemyPokemon.originX, this.enemyPokemon.originY);
@@ -1284,7 +1298,7 @@ export class BattleScene extends Phaser.Scene {
       pokemonBounds.x,
       startY,
       pokemonBounds.width,
-      pokemonBounds.height
+      pokemonBounds.height,
     );
 
     const mask = maskShape.createGeometryMask();
@@ -1316,7 +1330,7 @@ export class BattleScene extends Phaser.Scene {
             this.updateEnemyHPBar(
               this.enemyHPBarX,
               this.enemyHPBarY,
-              this.enemyHPBarWidth
+              this.enemyHPBarWidth,
             );
           },
         });
@@ -1373,7 +1387,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.7
+      0.7,
     );
     overlay.setDepth(2000);
     overlay.setInteractive();
@@ -1410,7 +1424,7 @@ export class BattleScene extends Phaser.Scene {
       centerY,
       outerRadius,
       0x000000,
-      0
+      0,
     );
     outerCircle.setStrokeStyle(8, 0xffffff, 1);
     outerCircle.setDepth(2001);
@@ -1421,7 +1435,7 @@ export class BattleScene extends Phaser.Scene {
       centerY,
       innerRadius,
       0x000000,
-      0
+      0,
     );
     innerCircle.setStrokeStyle(5, 0x444444, 1);
     innerCircle.setDepth(2001);
@@ -1435,10 +1449,10 @@ export class BattleScene extends Phaser.Scene {
       greenZone.lineStyle(8, 0x00ff00, 1);
       greenZone.beginPath();
       const greenZoneStart = Phaser.Math.DegToRad(
-        greenZoneAngle - greenZoneSize / 2
+        greenZoneAngle - greenZoneSize / 2,
       );
       const greenZoneEnd = Phaser.Math.DegToRad(
-        greenZoneAngle + greenZoneSize / 2
+        greenZoneAngle + greenZoneSize / 2,
       );
       greenZone.arc(
         centerX,
@@ -1446,7 +1460,7 @@ export class BattleScene extends Phaser.Scene {
         outerRadius,
         greenZoneStart,
         greenZoneEnd,
-        false
+        false,
       );
       greenZone.strokePath();
     };
@@ -1473,11 +1487,11 @@ export class BattleScene extends Phaser.Scene {
       arrow.moveTo(arrowX, arrowY);
       arrow.lineTo(
         arrowX + Math.cos(angle1) * arrowSize,
-        arrowY + Math.sin(angle1) * arrowSize
+        arrowY + Math.sin(angle1) * arrowSize,
       );
       arrow.lineTo(
         arrowX + Math.cos(angle2) * arrowSize,
-        arrowY + Math.sin(angle2) * arrowSize
+        arrowY + Math.sin(angle2) * arrowSize,
       );
       arrow.closePath();
       arrow.fillPath();
@@ -1493,7 +1507,7 @@ export class BattleScene extends Phaser.Scene {
       centerY + Math.sin(Phaser.Math.DegToRad(sphereAngle)) * sphereOrbitRadius,
       sphereRadius,
       0xffffff,
-      1
+      1,
     );
     sphere.setDepth(2004);
     sphere.setBlendMode(Phaser.BlendModes.ADD);
@@ -1698,7 +1712,7 @@ export class BattleScene extends Phaser.Scene {
       this.updateEnemyHPBar(
         this.enemyHPBarX,
         this.enemyHPBarY,
-        this.enemyHPBarWidth
+        this.enemyHPBarWidth,
       );
 
       this.updateBattleChat("⚠️ Partial defense: 2 HP lost, enemy healed 1!");
@@ -1715,7 +1729,7 @@ export class BattleScene extends Phaser.Scene {
       this.updateEnemyHPBar(
         this.enemyHPBarX,
         this.enemyHPBarY,
-        this.enemyHPBarWidth
+        this.enemyHPBarWidth,
       );
 
       this.updateBattleChat("❌ Weak defense: 2 HP lost, enemy healed 2!");
@@ -1732,7 +1746,7 @@ export class BattleScene extends Phaser.Scene {
       this.updateEnemyHPBar(
         this.enemyHPBarX,
         this.enemyHPBarY,
-        this.enemyHPBarWidth
+        this.enemyHPBarWidth,
       );
 
       this.updateBattleChat("💀 Failed defense: 3 HP lost, enemy healed 3!");
@@ -1751,7 +1765,7 @@ export class BattleScene extends Phaser.Scene {
         lifespan: 600,
         quantity: 20,
         blendMode: "ADD",
-      }
+      },
     );
     stealParticles.setDepth(100);
 
@@ -1805,7 +1819,7 @@ export class BattleScene extends Phaser.Scene {
     const specialSprite = this.add.sprite(
       playerBounds.centerX,
       playerBounds.centerY - 100 - extraOffset, // Empieza más arriba para sprites altos
-      "enemySpecialAttack"
+      "enemySpecialAttack",
     );
     specialSprite.setScale(2.5); // Tamaño aumentado
     specialSprite.setAlpha(0);
@@ -1852,7 +1866,7 @@ export class BattleScene extends Phaser.Scene {
     damageToPlayer: number,
     damageToEnemy: number = 0,
     energyGain: number = 0,
-    chatMessage: string = ""
+    chatMessage: string = "",
   ): void {
     const playerBounds = this.playerPokemon.getBounds();
 
@@ -1879,7 +1893,7 @@ export class BattleScene extends Phaser.Scene {
     const specialSprite = this.add.sprite(
       playerBounds.centerX,
       playerBounds.centerY - 100 - extraOffset, // Empieza más arriba para sprites altos
-      "enemySpecialAttack"
+      "enemySpecialAttack",
     );
     specialSprite.setScale(2.5); // Tamaño aumentado
     specialSprite.setAlpha(0);
@@ -1944,7 +1958,7 @@ export class BattleScene extends Phaser.Scene {
 
     console.log(
       "🔄 Cambio de turno. Ahora es turno de: " +
-        (this.isPlayerTurn ? "JUGADOR" : "RIVAL")
+        (this.isPlayerTurn ? "JUGADOR" : "RIVAL"),
     );
 
     // Actualizar indicadores de turno
@@ -2062,7 +2076,7 @@ export class BattleScene extends Phaser.Scene {
     const whiteGlow = this.add.image(
       this.enemyPokemon.x,
       this.enemyPokemon.y,
-      this.enemyPokemon.texture.key
+      this.enemyPokemon.texture.key,
     );
     whiteGlow.setScale(this.enemyPokemon.scaleX, this.enemyPokemon.scaleY);
     whiteGlow.setOrigin(this.enemyPokemon.originX, this.enemyPokemon.originY);
@@ -2175,7 +2189,7 @@ export class BattleScene extends Phaser.Scene {
 
   showSmashTutorialOverlay(
     focusCircle: { x: number; y: number },
-    callback: () => void
+    callback: () => void,
   ): void {
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
@@ -2187,7 +2201,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.7
+      0.7,
     );
     tutorialOverlay.setDepth(3000);
     tutorialOverlay.setInteractive();
@@ -2218,7 +2232,7 @@ export class BattleScene extends Phaser.Scene {
         align: "center",
         stroke: "#000000",
         strokeThickness: 6,
-      }
+      },
     );
     tutorialText.setOrigin(0.5);
     tutorialText.setDepth(3001);
@@ -2282,7 +2296,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.3
+      0.3,
     );
     overlay.setDepth(2000);
 
@@ -2331,7 +2345,7 @@ export class BattleScene extends Phaser.Scene {
         peaks[i].y,
         circleRadius,
         0x000000,
-        0
+        0,
       );
       circle.setStrokeStyle(5, 0x00ff00, 1); // Verde brillante
       circle.setDepth(2002);
@@ -2344,7 +2358,7 @@ export class BattleScene extends Phaser.Scene {
         peaks[i].y,
         circleRadius + 10,
         0x00ff00,
-        0
+        0,
       );
       glow.setDepth(2001);
       glow.setBlendMode(Phaser.BlendModes.ADD);
@@ -2362,7 +2376,7 @@ export class BattleScene extends Phaser.Scene {
       peaks[0].y,
       20,
       0x00ffff,
-      0.5
+      0.5,
     );
     sphereGlow.setDepth(2003);
     sphereGlow.setBlendMode(Phaser.BlendModes.ADD);
@@ -2404,7 +2418,7 @@ export class BattleScene extends Phaser.Scene {
         fontStyle: "bold",
         stroke: "#000000",
         strokeThickness: 6,
-      }
+      },
     );
     feedbackText.setOrigin(0.5, 0.5);
     feedbackText.setDepth(2004);
@@ -2462,7 +2476,7 @@ export class BattleScene extends Phaser.Scene {
           spherePos.x,
           spherePos.y,
           peak.x,
-          peak.y
+          peak.y,
         );
 
         if (dist < distance) {
@@ -2513,7 +2527,7 @@ export class BattleScene extends Phaser.Scene {
             quantity: 20,
             tint: 0x00ff00, // Verde
             blendMode: "ADD",
-          }
+          },
         );
         burstParticles.setDepth(2004);
 
@@ -2876,7 +2890,7 @@ export class BattleScene extends Phaser.Scene {
     const specialSprite = this.add.sprite(
       enemyBounds.centerX,
       enemyBounds.centerY - 100 - extraOffset,
-      "specialAttack"
+      "specialAttack",
     );
     specialSprite.setScale(2.5);
     specialSprite.setAlpha(0);
@@ -2939,7 +2953,7 @@ export class BattleScene extends Phaser.Scene {
 
   showShieldTutorialOverlay(
     focusZone: { x: number; width: number; y: number; height: number },
-    callback: () => void
+    callback: () => void,
   ): void {
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
@@ -2951,7 +2965,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.7
+      0.7,
     );
     tutorialOverlay.setDepth(3000);
     tutorialOverlay.setInteractive();
@@ -2966,7 +2980,7 @@ export class BattleScene extends Phaser.Scene {
       focusZone.x - 5,
       focusZone.y - 5,
       focusZone.width + 10,
-      focusZone.height + 10
+      focusZone.height + 10,
     );
 
     // Rectángulo exterior más grande con menos opacidad
@@ -2975,7 +2989,7 @@ export class BattleScene extends Phaser.Scene {
       focusZone.x - 10,
       focusZone.y - 10,
       focusZone.width + 20,
-      focusZone.height + 20
+      focusZone.height + 20,
     );
 
     // Texto del tutorial centrado
@@ -2991,7 +3005,7 @@ export class BattleScene extends Phaser.Scene {
         align: "center",
         stroke: "#000000",
         strokeThickness: 6,
-      }
+      },
     );
     tutorialText.setOrigin(0.5);
     tutorialText.setDepth(3001);
@@ -3052,7 +3066,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.7
+      0.7,
     );
     overlay.setDepth(3000);
     overlay.setInteractive();
@@ -3069,7 +3083,7 @@ export class BattleScene extends Phaser.Scene {
         align: "center",
         stroke: "#000000",
         strokeThickness: 6,
-      }
+      },
     );
     tutorialText.setOrigin(0.5, 0.5);
     tutorialText.setDepth(3001);
@@ -3112,7 +3126,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.3
+      0.3,
     );
     overlay.setDepth(2000);
 
@@ -3141,13 +3155,13 @@ export class BattleScene extends Phaser.Scene {
       targetZoneX - targetZoneWidth / 2,
       centerY - (barHeight - 10) / 2,
       targetZoneWidth,
-      barHeight - 10
+      barHeight - 10,
     );
     targetZone.strokeRect(
       targetZoneX - targetZoneWidth / 2,
       centerY - (barHeight - 10) / 2,
       targetZoneWidth,
-      barHeight - 10
+      barHeight - 10,
     );
     targetZone.setDepth(2001);
 
@@ -3159,7 +3173,7 @@ export class BattleScene extends Phaser.Scene {
       centerY - barHeight / 2,
       barWidth,
       barHeight,
-      10 // Radio de las esquinas redondeadas
+      10, // Radio de las esquinas redondeadas
     );
     barBackground.setDepth(2002);
 
@@ -3353,13 +3367,13 @@ export class BattleScene extends Phaser.Scene {
           targetZoneX - targetZoneWidth / 2,
           centerY - (barHeight - 10) / 2,
           targetZoneWidth,
-          barHeight - 10
+          barHeight - 10,
         );
         targetZone.strokeRect(
           targetZoneX - targetZoneWidth / 2,
           centerY - (barHeight - 10) / 2,
           targetZoneWidth,
-          barHeight - 10
+          barHeight - 10,
         );
         targetZone.setDepth(2001);
 
@@ -3517,12 +3531,12 @@ export class BattleScene extends Phaser.Scene {
       const glowSprite = this.add.image(
         this.playerPokemon.x,
         this.playerPokemon.y,
-        this.playerPokemon.texture.key
+        this.playerPokemon.texture.key,
       );
       glowSprite.setScale(this.playerPokemon.scaleX, this.playerPokemon.scaleY);
       glowSprite.setOrigin(
         this.playerPokemon.originX,
-        this.playerPokemon.originY
+        this.playerPokemon.originY,
       );
       glowSprite.setTint(0x00bfff); // Azul brillante
       glowSprite.setAlpha(0.7);
@@ -3539,7 +3553,7 @@ export class BattleScene extends Phaser.Scene {
         pokemonBounds.x,
         startY,
         pokemonBounds.width,
-        pokemonBounds.height
+        pokemonBounds.height,
       );
 
       const mask = maskShape.createGeometryMask();
@@ -3639,7 +3653,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.7
+      0.7,
     );
     tutorialOverlay.setDepth(3000);
     tutorialOverlay.setInteractive();
@@ -3657,7 +3671,7 @@ export class BattleScene extends Phaser.Scene {
         align: "center",
         stroke: "#000000",
         strokeThickness: 6,
-      }
+      },
     );
     tutorialText.setOrigin(0.5);
     tutorialText.setDepth(3001);
@@ -3724,7 +3738,7 @@ export class BattleScene extends Phaser.Scene {
         ? (tapHandler) => {
             tutorialTapHandler = tapHandler;
           }
-        : undefined
+        : undefined,
     );
 
     if (shouldShowTutorial) {
@@ -3745,7 +3759,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.7
+      0.7,
     );
     overlay.setDepth(2000);
     overlay.setInteractive();
@@ -3785,7 +3799,7 @@ export class BattleScene extends Phaser.Scene {
       centerY,
       outerRadius,
       0x000000,
-      0
+      0,
     );
     outerCircle.setStrokeStyle(8, 0xffffff, 1);
     outerCircle.setDepth(2001);
@@ -3796,7 +3810,7 @@ export class BattleScene extends Phaser.Scene {
       centerY,
       innerRadius,
       0x000000,
-      0
+      0,
     );
     innerCircle.setStrokeStyle(5, 0x444444, 1);
     innerCircle.setDepth(2001);
@@ -3810,10 +3824,10 @@ export class BattleScene extends Phaser.Scene {
       greenZone.lineStyle(8, 0x00ff00, 1);
       greenZone.beginPath();
       const greenZoneStart = Phaser.Math.DegToRad(
-        greenZoneAngle - greenZoneSize / 2
+        greenZoneAngle - greenZoneSize / 2,
       );
       const greenZoneEnd = Phaser.Math.DegToRad(
-        greenZoneAngle + greenZoneSize / 2
+        greenZoneAngle + greenZoneSize / 2,
       );
       greenZone.arc(
         centerX,
@@ -3821,7 +3835,7 @@ export class BattleScene extends Phaser.Scene {
         outerRadius,
         greenZoneStart,
         greenZoneEnd,
-        false
+        false,
       );
       greenZone.strokePath();
     };
@@ -3849,11 +3863,11 @@ export class BattleScene extends Phaser.Scene {
       arrow.moveTo(arrowX, arrowY); // Punta
       arrow.lineTo(
         arrowX + Math.cos(angle1) * arrowSize,
-        arrowY + Math.sin(angle1) * arrowSize
+        arrowY + Math.sin(angle1) * arrowSize,
       );
       arrow.lineTo(
         arrowX + Math.cos(angle2) * arrowSize,
-        arrowY + Math.sin(angle2) * arrowSize
+        arrowY + Math.sin(angle2) * arrowSize,
       );
       arrow.closePath();
       arrow.fillPath();
@@ -3869,7 +3883,7 @@ export class BattleScene extends Phaser.Scene {
       centerY + Math.sin(Phaser.Math.DegToRad(sphereAngle)) * sphereOrbitRadius,
       sphereRadius,
       0xffffff,
-      1
+      1,
     );
     sphere.setDepth(2004);
     sphere.setBlendMode(Phaser.BlendModes.ADD);
@@ -4098,7 +4112,7 @@ export class BattleScene extends Phaser.Scene {
       this.updatePlayerHPBar(
         this.playerHPBarX,
         this.playerHPBarY,
-        this.playerHPBarWidth
+        this.playerHPBarWidth,
       );
 
       // Efecto visual de robo
@@ -4114,7 +4128,7 @@ export class BattleScene extends Phaser.Scene {
           lifespan: 600,
           quantity: 20,
           blendMode: "ADD",
-        }
+        },
       );
       stealParticles.setDepth(100);
 
@@ -4182,7 +4196,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.5
+      0.5,
     );
     overlay.setDepth(2000);
 
@@ -4273,7 +4287,7 @@ export class BattleScene extends Phaser.Scene {
         this.cameras.main.width,
         this.cameras.main.height,
         0x000000,
-        0
+        0,
       );
       fullScreenHitArea.setInteractive();
       fullScreenHitArea.setDepth(2000);
@@ -4297,7 +4311,7 @@ export class BattleScene extends Phaser.Scene {
           currentScale.toFixed(2),
           "Target: 1.0",
           "Diff:",
-          diff.toFixed(2)
+          diff.toFixed(2),
         );
 
         // Margen de error intermedio: 0.075 en escala (antes 0.1, luego 0.05, ahora 0.075)
@@ -4313,7 +4327,7 @@ export class BattleScene extends Phaser.Scene {
               0,
               targetRadius,
               0x00ff00,
-              0.4
+              0.4,
             );
             glowCircle.setStrokeStyle(8, 0x00ff00, 0.8);
             glowCircle.setBlendMode(Phaser.BlendModes.ADD);
@@ -4360,7 +4374,7 @@ export class BattleScene extends Phaser.Scene {
               strokeThickness: 6,
               fontStyle: "bold",
               fontFamily: "Orbitron",
-            }
+            },
           );
           feedbackText.setOrigin(0.5);
           feedbackText.setDepth(2002);
@@ -4408,7 +4422,7 @@ export class BattleScene extends Phaser.Scene {
           strokeThickness: 6,
           fontStyle: "bold",
           fontFamily: "Orbitron",
-        }
+        },
       );
       feedbackText.setOrigin(0.5);
       feedbackText.setDepth(2002);
@@ -4487,7 +4501,7 @@ export class BattleScene extends Phaser.Scene {
     // Color desde TeamsData
     const particleColor = parseInt(
       this.playerTeam.trainer.monster.color.replace("#", ""),
-      16
+      16,
     );
     const originalScale = this.playerPokemon.scaleX;
 
@@ -4571,7 +4585,7 @@ export class BattleScene extends Phaser.Scene {
 
   launchSpecialAttack(
     damageToEnemy: number = 0,
-    damageToSelf: number = 0
+    damageToSelf: number = 0,
   ): void {
     const enemyBounds = this.enemyPokemon.getBounds();
 
@@ -4598,7 +4612,7 @@ export class BattleScene extends Phaser.Scene {
       const specialSprite = this.add.sprite(
         enemyBounds.centerX,
         enemyBounds.centerY - 100 - extraOffset, // Empieza más arriba para sprites altos
-        "specialAttack"
+        "specialAttack",
       );
       specialSprite.setScale(2.5); // Tamaño aumentado
       specialSprite.setAlpha(0);
@@ -4671,7 +4685,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.5
+      0.5,
     );
     overlay.setDepth(2000);
 
@@ -4714,11 +4728,11 @@ export class BattleScene extends Phaser.Scene {
       const targetRadius = circleRadii[currentRound % circleRadii.length];
       const randomX = Phaser.Math.Between(
         minX + targetRadius,
-        maxX - targetRadius
+        maxX - targetRadius,
       );
       const randomY = Phaser.Math.Between(
         minY + targetRadius,
-        maxY - targetRadius
+        maxY - targetRadius,
       );
 
       // Crear contenedor para el círculo
@@ -4739,7 +4753,7 @@ export class BattleScene extends Phaser.Scene {
       // Hacer el container interactivo con el área del círculo
       gameContainer.setInteractive(
         new Phaser.Geom.Circle(0, 0, targetRadius),
-        Phaser.Geom.Circle.Contains
+        Phaser.Geom.Circle.Contains,
       );
 
       // Variable para rastrear si se hizo clic
@@ -4815,7 +4829,7 @@ export class BattleScene extends Phaser.Scene {
           currentScale.toFixed(2),
           "Target: 1.0",
           "Diff:",
-          diff.toFixed(2)
+          diff.toFixed(2),
         );
 
         // Detener el tween inmediatamente
@@ -4847,7 +4861,7 @@ export class BattleScene extends Phaser.Scene {
       text: string,
       color: string,
       x: number,
-      y: number
+      y: number,
     ) => {
       const feedbackText = this.add.text(x, y, text, {
         fontSize: "48px",
@@ -4954,7 +4968,7 @@ export class BattleScene extends Phaser.Scene {
           damageToPlayer,
           damageToEnemy,
           energyGain,
-          chatMessage
+          chatMessage,
         );
         return;
       }
@@ -5060,7 +5074,7 @@ export class BattleScene extends Phaser.Scene {
           (this.evolutionInnerHeight - fillHeight),
         this.evolutionInnerWidth,
         fillHeight,
-        this.evolutionBarBorderRadius - 2
+        this.evolutionBarBorderRadius - 2,
       );
     } else {
       // Al completar (100%): mostrar gradiente arcoíris animado
@@ -5100,7 +5114,7 @@ export class BattleScene extends Phaser.Scene {
     const maskImage = this.add.image(
       this.trainerImage.x,
       this.trainerImage.y,
-      this.trainerImage.texture.key
+      this.trainerImage.texture.key,
     );
     maskImage.setOrigin(this.trainerImage.originX, this.trainerImage.originY);
     maskImage.setScale(this.trainerImage.scaleX, this.trainerImage.scaleY);
@@ -5133,7 +5147,7 @@ export class BattleScene extends Phaser.Scene {
     const glowTexture = this.textures.createCanvas(
       "evolveGlowTexture",
       glowWidth,
-      glowHeight
+      glowHeight,
     );
     glowTexture!.context.drawImage(glowCanvas, 0, 0);
     glowTexture!.refresh();
@@ -5142,7 +5156,7 @@ export class BattleScene extends Phaser.Scene {
     const glow = this.add.image(
       trainerBounds.centerX,
       trainerBounds.bottom + glowHeight / 2, // Empezar desde abajo
-      "evolveGlowTexture"
+      "evolveGlowTexture",
     );
     glow.setBlendMode(Phaser.BlendModes.ADD);
     glow.setMask(mask); // Máscara basada en la silueta del trainer
@@ -5174,7 +5188,7 @@ export class BattleScene extends Phaser.Scene {
       buttonY - 32,
       100,
       64,
-      12
+      12,
     );
     buttonBackdrop.strokeRoundedRect(buttonX - 50, buttonY - 32, 100, 64, 12);
     buttonBackdrop.setDepth(1001.5); // Entre el glow (1001) y el botón (1002)
@@ -5191,14 +5205,14 @@ export class BattleScene extends Phaser.Scene {
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      10 // Radio de las esquinas redondeadas
+      10, // Radio de las esquinas redondeadas
     );
     buttonBg.strokeRoundedRect(
       buttonX - buttonWidth / 2,
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      10
+      10,
     );
     buttonBg.setDepth(1002);
     buttonBg.setInteractive(
@@ -5206,9 +5220,9 @@ export class BattleScene extends Phaser.Scene {
         buttonX - buttonWidth / 2,
         buttonY - buttonHeight / 2,
         buttonWidth,
-        buttonHeight
+        buttonHeight,
       ),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     buttonBg.input!.cursor = "pointer";
     overlayContainer.add(buttonBg);
@@ -5242,7 +5256,7 @@ export class BattleScene extends Phaser.Scene {
             fontStyle: "bold",
             stroke: "#000000",
             strokeThickness: 4,
-          }
+          },
         );
         feedbackText.setOrigin(0.5, 0.5);
         feedbackText.setDepth(1002);
@@ -5273,7 +5287,7 @@ export class BattleScene extends Phaser.Scene {
             fontStyle: "bold",
             stroke: "#000000",
             strokeThickness: 4,
-          }
+          },
         );
         feedbackText.setOrigin(0.5, 0.5);
         feedbackText.setDepth(1002);
@@ -5336,7 +5350,7 @@ export class BattleScene extends Phaser.Scene {
     const whiteGlow = this.add.image(
       this.playerPokemon.x,
       this.playerPokemon.y,
-      this.playerPokemon.texture.key
+      this.playerPokemon.texture.key,
     );
     whiteGlow.setScale(this.playerPokemon.scaleX, this.playerPokemon.scaleY);
     whiteGlow.setOrigin(this.playerPokemon.originX, this.playerPokemon.originY);
@@ -5488,13 +5502,13 @@ export class BattleScene extends Phaser.Scene {
           const blueDark = { r: 0x25, g: 0x63, b: 0xeb };
 
           const r = Math.floor(
-            blueLight.r - (blueLight.r - blueDark.r) * ratio
+            blueLight.r - (blueLight.r - blueDark.r) * ratio,
           );
           const g = Math.floor(
-            blueLight.g - (blueLight.g - blueDark.g) * ratio
+            blueLight.g - (blueLight.g - blueDark.g) * ratio,
           );
           const b = Math.floor(
-            blueLight.b - (blueLight.b - blueDark.b) * ratio
+            blueLight.b - (blueLight.b - blueDark.b) * ratio,
           );
           const color = (r << 16) | (g << 8) | b;
 
@@ -5505,7 +5519,7 @@ export class BattleScene extends Phaser.Scene {
           const greenLight = 0xff;
           const greenDark = 0xcc;
           const greenValue = Math.floor(
-            greenLight - (greenLight - greenDark) * ratio
+            greenLight - (greenLight - greenDark) * ratio,
           );
           const color = greenValue << 8; // 0x00GG00 (verde puro)
 
@@ -5517,7 +5531,7 @@ export class BattleScene extends Phaser.Scene {
           y,
           sectionWidth,
           height,
-          1
+          1,
         );
       }
       // Si i >= enemyHPSections, no dibujamos nada (segmento vacío)
@@ -5560,13 +5574,13 @@ export class BattleScene extends Phaser.Scene {
           const blueDark = { r: 0x25, g: 0x63, b: 0xeb };
 
           const r = Math.floor(
-            blueLight.r - (blueLight.r - blueDark.r) * ratio
+            blueLight.r - (blueLight.r - blueDark.r) * ratio,
           );
           const g = Math.floor(
-            blueLight.g - (blueLight.g - blueDark.g) * ratio
+            blueLight.g - (blueLight.g - blueDark.g) * ratio,
           );
           const b = Math.floor(
-            blueLight.b - (blueLight.b - blueDark.b) * ratio
+            blueLight.b - (blueLight.b - blueDark.b) * ratio,
           );
           const color = (r << 16) | (g << 8) | b;
 
@@ -5577,7 +5591,7 @@ export class BattleScene extends Phaser.Scene {
           const greenLight = 0xff;
           const greenDark = 0xcc;
           const greenValue = Math.floor(
-            greenLight - (greenLight - greenDark) * ratio
+            greenLight - (greenLight - greenDark) * ratio,
           );
           const color = greenValue << 8; // 0x00GG00 (verde puro)
 
@@ -5589,7 +5603,7 @@ export class BattleScene extends Phaser.Scene {
           y,
           sectionWidth,
           height,
-          1
+          1,
         );
       }
       // Si i >= playerHPSections, no dibujamos nada (segmento vacío)
@@ -5618,7 +5632,7 @@ export class BattleScene extends Phaser.Scene {
     this.updatePlayerHPBar(
       this.playerHPBarX,
       this.playerHPBarY,
-      this.playerHPBarWidth
+      this.playerHPBarWidth,
     );
 
     // Efecto visual de daño en el pokémon del jugador (opcional)
@@ -5649,7 +5663,7 @@ export class BattleScene extends Phaser.Scene {
     this.updatePlayerHPBar(
       this.playerHPBarX,
       this.playerHPBarY,
-      this.playerHPBarWidth
+      this.playerHPBarWidth,
     );
 
     // Efecto visual de ganancia de escudo
@@ -5679,7 +5693,7 @@ export class BattleScene extends Phaser.Scene {
     this.updateEnemyHPBar(
       this.enemyHPBarX,
       this.enemyHPBarY,
-      this.enemyHPBarWidth
+      this.enemyHPBarWidth,
     );
 
     // Efecto visual de daño en el pokémon enemigo (opcional)
@@ -5741,7 +5755,7 @@ export class BattleScene extends Phaser.Scene {
     const basePoints = 500;
     const accuracyPoints = Math.max(
       0,
-      Math.round(this.battleSuccessfulHits * 40)
+      Math.round(this.battleSuccessfulHits * 40),
     );
     const timeBonus = Math.max(100, Math.round(600 - durationSeconds * 8));
     const total = basePoints + accuracyPoints + timeBonus;
@@ -5784,7 +5798,7 @@ export class BattleScene extends Phaser.Scene {
       this.cameras.main.width,
       this.cameras.main.height,
       0x000000,
-      0.85
+      0.85,
     );
     overlay.setOrigin(0, 0);
     overlay.setDepth(2000);
@@ -5866,11 +5880,11 @@ export class BattleScene extends Phaser.Scene {
           });
         }
 
-        // Volver al menú después de un delay
+        // Volver a selección de rival después de un delay
         this.time.delayedCall(3000, () => {
           this.cameras.main.fadeOut(500, 0, 0, 0);
           this.cameras.main.once("camerafadeoutcomplete", () => {
-            this.scene.start("MainMenuScene");
+            this.scene.start("RivalSelectionScene", { selectedTeamIndex: 7 });
           });
         });
         return; // No mostrar botones
@@ -5887,7 +5901,7 @@ export class BattleScene extends Phaser.Scene {
         centerX,
         centerY,
         updatedDefeatedRivals,
-        isCompleteVictory
+        isCompleteVictory,
       );
     } else {
       // DERROTA: Pantalla estática sin animaciones
@@ -5912,7 +5926,7 @@ export class BattleScene extends Phaser.Scene {
     centerX: number,
     centerY: number,
     updatedDefeatedRivals: number[],
-    isCompleteVictory: boolean
+    isCompleteVictory: boolean,
   ): void {
     const buttonWidth = 280;
     const buttonHeight = 70;
@@ -5936,7 +5950,7 @@ export class BattleScene extends Phaser.Scene {
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        14
+        14,
       );
       nextBg.lineStyle(3, 0x03eae9, 1);
       nextBg.strokeRoundedRect(
@@ -5944,7 +5958,7 @@ export class BattleScene extends Phaser.Scene {
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        14
+        14,
       );
 
       const nextText = this.add
@@ -5962,9 +5976,9 @@ export class BattleScene extends Phaser.Scene {
           -buttonWidth / 2,
           -buttonHeight / 2,
           buttonWidth,
-          buttonHeight
+          buttonHeight,
         ),
-        Phaser.Geom.Rectangle.Contains
+        Phaser.Geom.Rectangle.Contains,
       );
 
       // Hover effect
@@ -5976,7 +5990,7 @@ export class BattleScene extends Phaser.Scene {
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          14
+          14,
         );
         nextBg.lineStyle(3, 0x03eae9, 1);
         nextBg.strokeRoundedRect(
@@ -5984,7 +5998,7 @@ export class BattleScene extends Phaser.Scene {
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          14
+          14,
         );
         nextText.setColor("#ffffff");
       });
@@ -5997,7 +6011,7 @@ export class BattleScene extends Phaser.Scene {
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          14
+          14,
         );
         nextBg.lineStyle(3, 0x03eae9, 1);
         nextBg.strokeRoundedRect(
@@ -6005,7 +6019,7 @@ export class BattleScene extends Phaser.Scene {
           -buttonHeight / 2,
           buttonWidth,
           buttonHeight,
-          14
+          14,
         );
         nextText.setColor("#ffffff");
       });
@@ -6029,7 +6043,7 @@ export class BattleScene extends Phaser.Scene {
       -buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      14
+      14,
     );
     quitBg.lineStyle(3, 0x03eae9, 1);
     quitBg.strokeRoundedRect(
@@ -6037,7 +6051,7 @@ export class BattleScene extends Phaser.Scene {
       -buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      14
+      14,
     );
 
     const quitText = this.add
@@ -6055,9 +6069,9 @@ export class BattleScene extends Phaser.Scene {
         -buttonWidth / 2,
         -buttonHeight / 2,
         buttonWidth,
-        buttonHeight
+        buttonHeight,
       ),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
 
     // Hover effect
@@ -6069,7 +6083,7 @@ export class BattleScene extends Phaser.Scene {
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        14
+        14,
       );
       quitBg.lineStyle(3, 0x03eae9, 1);
       quitBg.strokeRoundedRect(
@@ -6077,7 +6091,7 @@ export class BattleScene extends Phaser.Scene {
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        14
+        14,
       );
       quitText.setColor("#ffffff");
     });
@@ -6090,7 +6104,7 @@ export class BattleScene extends Phaser.Scene {
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        14
+        14,
       );
       quitBg.lineStyle(3, 0x03eae9, 1);
       quitBg.strokeRoundedRect(
@@ -6098,7 +6112,7 @@ export class BattleScene extends Phaser.Scene {
         -buttonHeight / 2,
         buttonWidth,
         buttonHeight,
-        14
+        14,
       );
       quitText.setColor("#ffffff");
     });
@@ -6153,10 +6167,10 @@ export class BattleScene extends Phaser.Scene {
       });
     }
 
-    // Volver al menú principal
+    // Volver a selección de rival
     this.cameras.main.fadeOut(500, 0, 0, 0);
     this.cameras.main.once("camerafadeoutcomplete", () => {
-      this.scene.start("MainMenuScene");
+      this.scene.start("RivalSelectionScene", { selectedTeamIndex: 7 });
     });
   }
 }

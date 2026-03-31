@@ -1,8 +1,6 @@
 import { initRemix } from "@insidethesim/remix-dev";
-import GameSettings from "./config/GameSettings";
+import GameSettings, { getGameHeight } from "./config/GameSettings";
 import { BattleScene } from "./scenes/BattleScene";
-import { GameScene } from "./scenes/GameScene";
-import { MainMenuScene } from "./scenes/MainMenuScene";
 import { PreloadScene } from "./scenes/PreloadScene";
 import { RivalSelectionScene } from "./scenes/RivalSelectionScene";
 
@@ -10,26 +8,24 @@ import { RivalSelectionScene } from "./scenes/RivalSelectionScene";
 
 // Esperar a que la fuente Orbitron se cargue antes de iniciar el juego
 document.fonts.ready.then(() => {
+  // Dynamic height: 1080 for 2:3, taller for narrower screens
+  const gameWidth = GameSettings.canvas.width;
+  const gameHeight = getGameHeight();
+
   // Game configuration
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.WEBGL,
-    width: GameSettings.canvas.width,
-    height: GameSettings.canvas.height,
+    width: gameWidth,
+    height: gameHeight,
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
       parent: document.body,
-      width: GameSettings.canvas.width,
-      height: GameSettings.canvas.height,
+      width: gameWidth,
+      height: gameHeight,
     },
     backgroundColor: "#0f0f1e",
-    scene: [
-      PreloadScene,
-      MainMenuScene,
-      GameScene,
-      RivalSelectionScene,
-      BattleScene,
-    ],
+    scene: [PreloadScene, RivalSelectionScene, BattleScene],
     physics: {
       default: "arcade",
     },

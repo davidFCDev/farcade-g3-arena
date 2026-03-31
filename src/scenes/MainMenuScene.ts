@@ -4,54 +4,48 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   preload() {
-    // Cargar imagen de fondo
-    this.load.image(
-      "menu-bg",
-      "https://g3-remix-bucket.s3.eu-north-1.amazonaws.com/main-menu-scene.png"
-    );
-
     // Cargar audios
     this.load.audio(
       "sfx-start",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/start-KAHDaTAFztq3sUz7CJy7TutmOGzsp2.mp3?050F"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/start-KAHDaTAFztq3sUz7CJy7TutmOGzsp2.mp3?050F",
     );
     this.load.audio(
       "sfx-pokedex",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/pokedex-xxWufziI92hGtKzMk5B6OvZc73k8WH.mp3?2AgA"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/pokedex-xxWufziI92hGtKzMk5B6OvZc73k8WH.mp3?2AgA",
     );
     this.load.audio(
       "sfx-select",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/select-JnOvmii78UigFWiLDpIfDbdbwIWeN4.mp3?7Px7"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/select-JnOvmii78UigFWiLDpIfDbdbwIWeN4.mp3?7Px7",
     );
     this.load.audio(
       "music-selection",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/start-music-xxYYpxNilydXjoP7YoueVCKX8BQevz.mp3?CjSh"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/start-music-xxYYpxNilydXjoP7YoueVCKX8BQevz.mp3?CjSh",
     );
     this.load.audio(
       "music-battle",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/music1-Q0vPf8z0Spzm88n1OQtNKP7cgsPK5w.mp3?CE9h"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/music1-Q0vPf8z0Spzm88n1OQtNKP7cgsPK5w.mp3?CE9h",
     );
     this.load.audio(
       "music-battle-2",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/cyberpunk-132336-RFAH5p8ZvOJxB6YancH1gEURaSlpkE.mp3?CqdS"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/cyberpunk-132336-RFAH5p8ZvOJxB6YancH1gEURaSlpkE.mp3?CqdS",
     );
 
     // Nuevos efectos de sonido para batallas
     this.load.audio(
       "sfx-sphere-hit",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/sphere-WLSBDucIaPDaAlXubJ3SEfjq79o9K9.mp3?e54C"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/sphere-WLSBDucIaPDaAlXubJ3SEfjq79o9K9.mp3?e54C",
     );
     this.load.audio(
       "sfx-special",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/special-YjhYkcVGXDgUTALglTIPQKxvjsEkid.mp3?LD1H"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/special-YjhYkcVGXDgUTALglTIPQKxvjsEkid.mp3?LD1H",
     );
     this.load.audio(
       "sfx-attack",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/attack-aswJG3qiQoxlKZnaevHsNgKIa9xBnu.mp3?RJLA"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/attack-aswJG3qiQoxlKZnaevHsNgKIa9xBnu.mp3?RJLA",
     );
     this.load.audio(
       "sfx-shield",
-      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/shield-z5xrn3ac2LMFJCyQm0DjBhvccel8B2.mp3?ivSh"
+      "https://remix.gg/blob/0d6cff4c-aa80-4b7a-8ec2-107962211b8e/shield-z5xrn3ac2LMFJCyQm0DjBhvccel8B2.mp3?ivSh",
     );
   }
 
@@ -83,7 +77,7 @@ export class MainMenuScene extends Phaser.Scene {
       width,
       height,
       0x000000,
-      0.25
+      0.25,
     );
     overlay.setDepth(1);
 
@@ -119,7 +113,7 @@ export class MainMenuScene extends Phaser.Scene {
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      15
+      15,
     );
     buttonBg.setDepth(5);
 
@@ -131,7 +125,7 @@ export class MainMenuScene extends Phaser.Scene {
       buttonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      15
+      15,
     );
     buttonBorder.setDepth(6);
 
@@ -159,7 +153,7 @@ export class MainMenuScene extends Phaser.Scene {
       centerX,
       buttonY,
       buttonWidth,
-      buttonHeight
+      buttonHeight,
     );
     buttonZone.setInteractive({ useHandCursor: true });
     buttonZone.setDepth(7);
@@ -235,7 +229,7 @@ export class MainMenuScene extends Phaser.Scene {
       width,
       height,
       0x000000,
-      0.85
+      0.85,
     );
     modalOverlay.setDepth(1000);
     modalOverlay.setInteractive();
@@ -252,7 +246,7 @@ export class MainMenuScene extends Phaser.Scene {
       centerY - panelHeight / 2,
       panelWidth,
       panelHeight,
-      20
+      20,
     );
     panelBg.setDepth(1001);
 
@@ -264,7 +258,7 @@ export class MainMenuScene extends Phaser.Scene {
       centerY - panelHeight / 2,
       panelWidth,
       panelHeight,
-      20
+      20,
     );
     panelBorder.setDepth(1002);
 

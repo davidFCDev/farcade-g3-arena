@@ -14,10 +14,9 @@ export class CharacterSelectionScene extends Phaser.Scene {
   preload() {}
 
   create() {
-    const width = 720;
-    const height = 1080;
-    const centerX = 360;
-    const centerY = 540;
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Fondo con imagen - ajustar para cubrir toda la pantalla
     const bg = this.add.image(centerX, centerY, "selection-bg");
@@ -42,15 +41,15 @@ export class CharacterSelectionScene extends Phaser.Scene {
     // Imagen del equipo (detrás de la pokédex)
     // Posición fija relativa al centro de la pantalla
     this.teamImage = this.add.image(
-      360,
-      480,
-      charImages[TEAMS[this.currentIndex].id]
+      centerX,
+      centerY - 60,
+      charImages[TEAMS[this.currentIndex].id],
     );
     this.teamImage.setDepth(1);
     // Escalar para que encaje en la pantalla de la pokédex
     const imageScale = Math.min(
       (720 * 0.65) / this.teamImage.width,
-      (1080 * 0.55) / this.teamImage.height
+      (1080 * 0.55) / this.teamImage.height,
     );
     this.teamImage.setScale(imageScale);
 
@@ -58,17 +57,17 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const maskShape = this.add.graphics();
     maskShape.fillStyle(0xffffff);
     // Área rectangular donde se muestra la imagen (zona de la pantalla de la pokédex)
-    maskShape.fillRect(110, 130, 500, 600);
+    maskShape.fillRect(centerX - 250, centerY - 410, 500, 600);
     this.imageMask = maskShape.createGeometryMask();
     this.teamImage.setMask(this.imageMask);
 
     // Pokédex encima de la imagen
-    const pokedex = this.add.image(360, 540, "pokedex");
+    const pokedex = this.add.image(centerX, centerY, "pokedex");
     pokedex.setDepth(10);
     // Escalar pokédex para que ocupe casi toda la pantalla
     const pokedexScale = Math.min(
       (720 * 0.98) / pokedex.width,
-      (height * 0.95) / pokedex.height
+      (height * 0.95) / pokedex.height,
     );
     pokedex.setScale(pokedexScale);
 
@@ -77,7 +76,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
       centerX - 190,
       centerY - 370,
       45,
-      0x03ebe9
+      0x03ebe9,
     );
     powerLight.setDepth(25);
 
@@ -87,7 +86,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
       centerY - 370,
       54,
       0x03ebe9,
-      0.4
+      0.4,
     );
     glowLight1.setDepth(24);
     const glowLight2 = this.add.circle(
@@ -95,7 +94,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
       centerY - 370,
       63,
       0x03ebe9,
-      0.2
+      0.2,
     );
     glowLight2.setDepth(23);
 
@@ -111,7 +110,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
 
     // Triángulos de navegación (debajo del cristal de la pokédex)
     // Posición fija relativa a la pokédex
-    const triangleY = 728;
+    const triangleY = centerY + 188;
 
     // Triángulo izquierdo (más grande)
     const leftTriangle = this.add.graphics();
@@ -122,7 +121,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
       325,
       triangleY - 20, // vértice superior
       325,
-      triangleY + 20 // vértice inferior
+      triangleY + 20, // vértice inferior
     );
     leftTriangle.setDepth(25);
     // Área de hit ampliada (rectángulo más grande que el triángulo visual)
@@ -131,9 +130,9 @@ export class CharacterSelectionScene extends Phaser.Scene {
         270, // x más a la izquierda
         triangleY - 40, // y más arriba
         70, // ancho ampliado
-        80 // alto ampliado
+        80, // alto ampliado
       ),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     // Cursor pointer para mejorar UX
     if (leftTriangle.input) {
@@ -149,7 +148,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
         325,
         triangleY - 20,
         325,
-        triangleY + 20
+        triangleY + 20,
       );
     });
     leftTriangle.on("pointerout", () => {
@@ -161,7 +160,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
         325,
         triangleY - 20,
         325,
-        triangleY + 20
+        triangleY + 20,
       );
     });
 
@@ -174,7 +173,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
       395,
       triangleY - 20, // vértice superior
       395,
-      triangleY + 20 // vértice inferior
+      triangleY + 20, // vértice inferior
     );
     rightTriangle.setDepth(25);
     // Área de hit ampliada (rectángulo más grande que el triángulo visual)
@@ -183,9 +182,9 @@ export class CharacterSelectionScene extends Phaser.Scene {
         380, // x más a la izquierda
         triangleY - 40, // y más arriba
         70, // ancho ampliado
-        80 // alto ampliado
+        80, // alto ampliado
       ),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     if (rightTriangle.input) {
       rightTriangle.input.cursor = "pointer";
@@ -200,7 +199,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
         395,
         triangleY - 20,
         395,
-        triangleY + 20
+        triangleY + 20,
       );
     });
     rightTriangle.on("pointerout", () => {
@@ -212,7 +211,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
         395,
         triangleY - 20,
         395,
-        triangleY + 20
+        triangleY + 20,
       );
     });
 
@@ -221,7 +220,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const teamNameOnly = TEAMS[this.currentIndex].name
       .replace("Team ", "")
       .toUpperCase();
-    this.teamNameText = this.add.text(360, 655, teamNameOnly, {
+    this.teamNameText = this.add.text(centerX, centerY + 115, teamNameOnly, {
       fontSize: "32px",
       color: "#ffffff",
       fontFamily: "Orbitron",
@@ -241,7 +240,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
 
     // Texto "Select" (en la parte baja de la pokédex)
     // Posición fija
-    const selectText = this.add.text(315, 910, "SELECT", {
+    const selectText = this.add.text(centerX - 45, centerY + 370, "SELECT", {
       fontSize: "32px",
       color: "#1a1a1a",
       fontFamily: "Orbitron",
@@ -252,7 +251,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
     // Área de hit ampliada para facilitar el toque en móviles
     selectText.setInteractive(
       new Phaser.Geom.Rectangle(-60, -30, 240, 80), // Área mucho más grande
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     // Configurar cursor pointer
     if (selectText.input) {
@@ -287,7 +286,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
     overlay.setOrigin(0, 0);
     overlay.setDepth(100);
 
-    const introText = this.add.text(360, 540, "CHOOSE\nYOUR TEAM", {
+    const introText = this.add.text(centerX, centerY, "CHOOSE\nYOUR TEAM", {
       fontSize: "40px",
       color: "#ffffff",
       fontFamily: "Orbitron",
@@ -359,7 +358,7 @@ export class CharacterSelectionScene extends Phaser.Scene {
 
   updateTeamImage(
     charImages: { [key: string]: string },
-    direction: number = 1
+    direction: number = 1,
   ) {
     if (!this.teamImage) return;
 
@@ -367,15 +366,17 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const oldImage = this.teamImage;
 
     // Crear nueva imagen EXACTAMENTE en la misma posición (sin offset)
+    const cx = this.scale.width / 2;
+    const cy = this.scale.height / 2;
     const newImage = this.add.image(
-      360,
-      480,
-      charImages[TEAMS[this.currentIndex].id]
+      cx,
+      cy - 60,
+      charImages[TEAMS[this.currentIndex].id],
     );
     newImage.setDepth(1);
     const imageScale = Math.min(
       (720 * 0.65) / newImage.width,
-      (1080 * 0.55) / newImage.height
+      (1080 * 0.55) / newImage.height,
     );
     newImage.setScale(imageScale);
 

@@ -34,10 +34,9 @@ export class RivalSelectionScene extends Phaser.Scene {
   preload() {}
 
   create() {
-    const width = 720;
-    const height = 1080;
-    const centerX = 360;
-    const centerY = 540;
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Limpiar arrays de la vuelta anterior
     this.cards = [];
@@ -61,6 +60,17 @@ export class RivalSelectionScene extends Phaser.Scene {
     }
 
     // Flujo normal de selección de rivales
+
+    // Iniciar música de selección si no está sonando
+    if (!this.sound.get("music-selection")?.isPlaying) {
+      const existing = this.sound.get("music-selection");
+      if (existing) {
+        existing.stop();
+        existing.destroy();
+      }
+      this.sound.add("music-selection", { loop: true, volume: 0.6 }).play();
+    }
+
     // Fondo - ajustar para cubrir toda la pantalla
     const bg = this.add.image(centerX, centerY, "rival-bg");
     const scaleX = width / bg.width;
@@ -109,11 +119,11 @@ export class RivalSelectionScene extends Phaser.Scene {
       const trainerImg = this.add.image(
         cardWidth / 2,
         cardHeight / 2 - 10,
-        `trainer-${index}`
+        `trainer-${index}`,
       );
       const scale = Math.min(
         (cardWidth - 30) / trainerImg.width,
-        (cardHeight - 50) / trainerImg.height
+        (cardHeight - 50) / trainerImg.height,
       );
       trainerImg.setScale(scale);
       card.add(trainerImg);
@@ -137,7 +147,7 @@ export class RivalSelectionScene extends Phaser.Scene {
             blur: 5,
             fill: true,
           },
-        }
+        },
       );
       teamName.setOrigin(0.5, 0.5);
       card.add(teamName);
@@ -321,10 +331,9 @@ export class RivalSelectionScene extends Phaser.Scene {
     // (Eliminada animación de celebración de escala para cumplir requisito: solo borde)
 
     // Obtener dimensiones una sola vez
-    const width = 720;
-    const height = 1080;
-    const centerX = 360;
-    const centerY = 540;
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Esperar un momento antes de mostrar el overlay
     this.time.delayedCall(800, () => {
@@ -360,7 +369,7 @@ export class RivalSelectionScene extends Phaser.Scene {
             blur: 8,
             fill: true,
           },
-        }
+        },
       );
       overlayText.setOrigin(0.5, 0.5);
       overlayText.setDepth(101);
@@ -406,7 +415,7 @@ export class RivalSelectionScene extends Phaser.Scene {
       if (window.FarcadeSDK?.singlePlayer?.actions?.ready) {
         try {
           const sdkTimeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("SDK timeout")), 3000)
+            setTimeout(() => reject(new Error("SDK timeout")), 3000),
           );
           const sdkReady = window.FarcadeSDK.singlePlayer.actions.ready();
           const gameInfo = (await Promise.race([sdkReady, sdkTimeout])) as any;
@@ -434,10 +443,9 @@ export class RivalSelectionScene extends Phaser.Scene {
   }
 
   showDarkBossAppearance() {
-    const width = 720;
-    const height = 1080;
-    const centerX = 360;
-    const centerY = 540;
+    const { width, height } = this.scale;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
     // Fondo oscuro dramático
     const bg = this.add.rectangle(0, 0, width, height, 0x0a0a0a);
@@ -452,7 +460,7 @@ export class RivalSelectionScene extends Phaser.Scene {
         4,
         Phaser.Math.Between(200, 400),
         0x8b0000,
-        0.3
+        0.3,
       );
       ray.setRotation(Phaser.Math.FloatBetween(0, Math.PI * 2));
       ray.setDepth(1);
@@ -513,7 +521,7 @@ export class RivalSelectionScene extends Phaser.Scene {
     const trainerImg = this.add.image(
       centerX,
       centerY + 110,
-      `trainer-${darkChampionIndex}`
+      `trainer-${darkChampionIndex}`,
     );
     trainerImg.setScale(1.5);
     trainerImg.setDepth(5);
@@ -591,7 +599,7 @@ export class RivalSelectionScene extends Phaser.Scene {
       if (window.FarcadeSDK?.singlePlayer?.actions?.ready) {
         try {
           const sdkTimeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("SDK timeout")), 3000)
+            setTimeout(() => reject(new Error("SDK timeout")), 3000),
           );
           const sdkReady = window.FarcadeSDK.singlePlayer.actions.ready();
           const gameInfo = (await Promise.race([sdkReady, sdkTimeout])) as any;

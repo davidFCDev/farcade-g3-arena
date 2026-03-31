@@ -6,7 +6,7 @@
 export const GameSettings = {
   canvas: {
     width: 720,
-    height: 1080,
+    height: 1080, // Base height (2:3). Use getGameHeight() for actual runtime height.
   },
   layout: {
     battleField: {
@@ -50,5 +50,24 @@ export const GameSettings = {
     },
   },
 };
+
+/**
+ * Compute game height based on the actual viewport.
+ * - 2:3 or wider → 1080 (standard)
+ * - Taller screens → proportionally larger (e.g. 1280 for 9:16)
+ */
+export function getGameHeight(): number {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const aspectRatio = w / h;
+  const is2by3 = Math.abs(aspectRatio - 2 / 3) < 0.02;
+
+  if (is2by3 || aspectRatio > 2 / 3) {
+    return GameSettings.canvas.height;
+  }
+
+  // Taller than 2:3 — expand height, cap at 1920
+  return Math.min(1920, Math.round(GameSettings.canvas.width / aspectRatio));
+}
 
 export default GameSettings;
