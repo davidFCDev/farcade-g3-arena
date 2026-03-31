@@ -5880,13 +5880,7 @@ export class BattleScene extends Phaser.Scene {
           });
         }
 
-        // Volver a selección de rival después de un delay
-        this.time.delayedCall(3000, () => {
-          this.cameras.main.fadeOut(500, 0, 0, 0);
-          this.cameras.main.once("camerafadeoutcomplete", () => {
-            this.scene.start("RivalSelectionScene", { selectedTeamIndex: 7 });
-          });
-        });
+        // No navegar a ninguna escena - el SDK maneja el "play again"
         return; // No mostrar botones
       }
 
@@ -6167,10 +6161,6 @@ export class BattleScene extends Phaser.Scene {
       });
     }
 
-    // Volver a selección de rival
-    this.cameras.main.fadeOut(500, 0, 0, 0);
-    this.cameras.main.once("camerafadeoutcomplete", () => {
-      this.scene.start("RivalSelectionScene", { selectedTeamIndex: 7 });
-    });
+    // No navegar a ninguna escena - el SDK maneja el "play again"
   }
 }
